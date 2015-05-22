@@ -1,0 +1,14 @@
+{
+  "name": "glaze-render",
+  "url": "https://github.com/rjewson/glaze-render",
+  "license": "MIT",
+  "classPath": "src",
+  "tags": [],
+  "description": "2d Webgl game renderer",
+  "releasenote": "",
+  "version": "0.1.0",
+  "contributors": ["rjewson"],
+  "dependencies": {
+    "glaze-core":""
+  }
+}
