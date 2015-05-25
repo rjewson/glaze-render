@@ -1,13 +1,13 @@
 
-package wgr.renderers.webgl;
+package glaze.render.renderers.webgl;
 
 import js.html.webgl.RenderingContext;
-import wgr.display.Camera;
-import wgr.display.Stage;
-import wgr.geom.Point;
-import wgr.geom.AABB;
-import wgr.renderers.webgl.IRenderer;
-import wgr.renderers.webgl.ShaderWrapper;
+import glaze.render.display.Camera;
+import glaze.render.display.Stage;
+import glaze.geom.Vector2;
+import glaze.geom.AABB2;
+import glaze.render.renderers.webgl.IRenderer;
+import glaze.render.renderers.webgl.ShaderWrapper;
 
 class SpriteRenderer implements IRenderer
 {
@@ -16,7 +16,7 @@ class SpriteRenderer implements IRenderer
     public var stage:Stage;
     public var camera:Camera;
 
-    public var projection:Point;
+    public var projection:Vector2;
 
     public var spriteShader:ShaderWrapper;
     
@@ -28,7 +28,7 @@ class SpriteRenderer implements IRenderer
     public function Init(gl:RenderingContext,camera:Camera) {
         this.gl = gl;
         this.camera = camera;
-        projection = new Point();
+        projection = new Vector2();
         spriteShader = new ShaderWrapper(gl, WebGLShaders.CompileProgram(gl,SPRITE_VERTEX_SHADER,SPRITE_FRAGMENT_SHADER));
         spriteBatch = new WebGLBatch(gl);
         spriteBatch.ResizeBatch(1000);
@@ -43,7 +43,7 @@ class SpriteRenderer implements IRenderer
         this.stage = stage;
     }
 
-    public function Render(clip:AABB) {
+    public function Render(clip:AABB2) {
         gl.useProgram(spriteShader.program);
         gl.enableVertexAttribArray(untyped spriteShader.attribute.aVertexPosition);
         gl.enableVertexAttribArray(untyped spriteShader.attribute.aTextureCoord);

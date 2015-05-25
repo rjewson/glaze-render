@@ -1,26 +1,26 @@
-package wgr.renderers.webgl;
+package glaze.render.renderers.webgl;
 
-import ds.Array2D;
+import glaze.ds.TypedArray2D;
 import js.html.Float32Array;
 import js.html.Image;
 import js.html.webgl.RenderingContext;
 import js.html.webgl.Texture;
-import wgr.geom.Point;
+import glaze.geom.Vector2;
 
 class TileLayer
 {
 
-    public var scrollScale:Point;
+    public var scrollScale:Vector2;
     public var tileTexture:Texture;
     public var inverseTextureSize:Float32Array;
 
     public function new()
     {
-        scrollScale = new Point(1,1);
+        scrollScale = new Vector2(1,1);
         inverseTextureSize = new Float32Array(2);
     }
 
-    public function setTextureFromMap(gl:RenderingContext,data:Array2D) {
+    public function setTextureFromMap(gl:RenderingContext,data:TypedArray2D) {
         if (tileTexture==null)
             tileTexture = gl.createTexture();
         gl.bindTexture(RenderingContext.TEXTURE_2D,tileTexture);

@@ -1,5 +1,5 @@
 
-package wgr.renderers.webgl;
+package glaze.render.renderers.webgl;
 
 import js.html.Float32Array;
 import js.html.Uint16Array;
@@ -7,12 +7,12 @@ import js.html.webgl.Buffer;
 import js.html.webgl.Program;
 import js.html.webgl.RenderingContext;
 import js.html.webgl.Texture;
-import wgr.display.DisplayObject;
-import wgr.display.DisplayObjectContainer;
-import wgr.display.Sprite;
-import wgr.display.Stage;
-import wgr.geom.AABB;
-import wgr.renderers.webgl.ShaderWrapper;
+import glaze.render.display.DisplayObject;
+import glaze.render.display.DisplayObjectContainer;
+import glaze.render.display.Sprite;
+import glaze.render.display.Stage;
+import glaze.geom.AABB2;
+import glaze.render.renderers.webgl.ShaderWrapper;
 
 class WebGLBatch 
 {
@@ -127,7 +127,7 @@ class WebGLBatch
     }
 
 
-    public function Render(shader:ShaderWrapper,stage:Stage,clip:AABB) {
+    public function Render(shader:ShaderWrapper,stage:Stage,clip:AABB2) {
 
         gl.useProgram(shader.program);
 
@@ -175,7 +175,7 @@ class WebGLBatch
     }
 
     //TODO Render type Change
-    public function Render2(shader:ShaderWrapper,stage:Stage,clip:AABB) {
+    public function Render2(shader:ShaderWrapper,stage:Stage,clip:AABB2) {
 
         gl.useProgram(shader.program);
         
@@ -211,7 +211,7 @@ class WebGLBatch
 
     }
 
-    public function Render1(shader:ShaderWrapper,spriteHead:Sprite,clip:AABB) {
+    public function Render1(shader:ShaderWrapper,spriteHead:Sprite,clip:AABB2) {
         
         if (spriteHead==null)
             return;

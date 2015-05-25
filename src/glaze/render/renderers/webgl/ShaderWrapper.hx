@@ -1,5 +1,5 @@
 
-package wgr.renderers.webgl;
+package glaze.render.renderers.webgl;
 
 import js.html.webgl.Program;
 import js.html.webgl.RenderingContext;

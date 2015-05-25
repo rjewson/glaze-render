@@ -1,6 +1,6 @@
-package wgr.renderers.webgl;
+package glaze.render.renderers.webgl;
 
-import ds.Array2D;
+import glaze.ds.TypedArray2D;
 import js.html.Float32Array;
 import js.html.Image;
 import js.html.Uint32Array;
@@ -9,18 +9,18 @@ import js.html.webgl.Buffer;
 import js.html.webgl.Program;
 import js.html.webgl.RenderingContext;
 import js.html.webgl.Texture;
-import wgr.display.Camera;
-import wgr.geom.Point;
-import wgr.geom.AABB;
-import wgr.renderers.webgl.IRenderer;
-import wgr.renderers.webgl.ShaderWrapper;
-import wgr.renderers.webgl.WebGLShaders;
-import wgr.renderers.webgl.TileLayer;
+import glaze.render.display.Camera;
+import glaze.geom.Vector2;
+import glaze.geom.AABB2;
+import glaze.render.renderers.webgl.IRenderer;
+import glaze.render.renderers.webgl.ShaderWrapper;
+import glaze.render.renderers.webgl.WebGLShaders;
+import glaze.render.renderers.webgl.TileLayer;
 
 class TileMap implements IRenderer
 {
     public var gl:RenderingContext;
-    public var viewportSize:Point;
+    public var viewportSize:Vector2;
     public var scaledViewportSize:Float32Array;
     public var inverseTileTextureSize:Float32Array;
     public var inverseSpriteTextureSize:Float32Array;
@@ -52,7 +52,7 @@ class TileMap implements IRenderer
         spriteSheet = gl.createTexture();
         layers = new Array<TileLayer>();
 
-        viewportSize = new Point();
+        viewportSize = new Vector2();
         scaledViewportSize = new Float32Array(2);
         inverseTileTextureSize = new Float32Array(2);
         inverseSpriteTextureSize = new Float32Array(2);
@@ -123,7 +123,7 @@ class TileMap implements IRenderer
         layers.push(layer);
     }
 
-    public function SetTileLayerFromData(data:Array2D,layerId:String,scrollScaleX:Float,scrollScaleY:Float) {
+    public function SetTileLayerFromData(data:TypedArray2D,layerId:String,scrollScaleX:Float,scrollScaleY:Float) {
         var layer = new TileLayer();
         layer.setTextureFromMap(gl,data);
         layer.scrollScale.x = scrollScaleX;
@@ -140,7 +140,7 @@ class TileMap implements IRenderer
         return Math.round( v * 10) / 10;
     }
 
-    public function Render(clip:AABB) {
+    public function Render(clip:AABB2) {
         var x = -camera.position.x / (tileScale*2);
         var y = -camera.position.y / (tileScale*2);
         //x += tileSize/2;

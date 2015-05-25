@@ -1,20 +1,20 @@
 
-package wgr.renderers.webgl;
+package glaze.render.renderers.webgl;
 
 import js.html.CanvasElement;
 import js.html.Event;
 import js.html.webgl.ContextAttributes;
 import js.html.webgl.Program;
 import js.html.webgl.RenderingContext;
-import wgr.display.Camera;
-import wgr.display.Stage;
-import wgr.geom.Point;
-import wgr.geom.AABB;
-import wgr.renderers.webgl.IRenderer;
-import wgr.renderers.webgl.ShaderWrapper;
-import wgr.renderers.webgl.SpriteRenderer;
-import wgr.renderers.webgl.WebGLBatch;
-import wgr.renderers.webgl.WebGLShaders;
+import glaze.render.display.Camera;
+import glaze.render.display.Stage;
+import glaze.geom.Vector2;
+import glaze.geom.AABB2;
+import glaze.render.renderers.webgl.IRenderer;
+import glaze.render.renderers.webgl.ShaderWrapper;
+import glaze.render.renderers.webgl.SpriteRenderer;
+import glaze.render.renderers.webgl.WebGLBatch;
+import glaze.render.renderers.webgl.WebGLShaders;
 
 class WebGLRenderer 
 {
@@ -76,7 +76,7 @@ class WebGLRenderer
         renderers.push(renderer);
     }
 
-    public function Render(clip:AABB) {
+    public function Render(clip:AABB2) {
         if (contextLost) 
             return;
         stage.updateTransform();

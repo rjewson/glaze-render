@@ -1,15 +1,14 @@
 
 package glaze.render.texture;
 
+import glaze.geom.Vector2;
 import haxe.ds.StringMap;
 import haxe.xml.Fast;
 import js.html.Image;
 import js.html.webgl.RenderingContext;
-import wgr.geom.Point;
-import wgr.geom.Rectangle;
-import wgr.texture.BaseTexture;
-import utils.EventTarget;
-import wgr.texture.Texture;
+import glaze.geom.Rectangle;
+import glaze.render.texture.BaseTexture;
+import glaze.render.texture.Texture;
 
 class TextureManager
 {
@@ -53,7 +52,7 @@ class TextureManager
                         Std.parseInt(frame.frame.w), 
                         Std.parseInt(frame.frame.h)
                     ),
-                    new Point(
+                    new Vector2(
                         Std.parseFloat(frame.pivot.x),
                         Std.parseFloat(frame.pivot.y)
                     )
