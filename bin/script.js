@@ -90,7 +90,15 @@ var _$List_ListIterator = function(head) {
 };
 _$List_ListIterator.__name__ = true;
 _$List_ListIterator.prototype = {
-	__class__: _$List_ListIterator
+	hasNext: function() {
+		return this.head != null;
+	}
+	,next: function() {
+		this.val = this.head[0];
+		this.head = this.head[1];
+		return this.val;
+	}
+	,__class__: _$List_ListIterator
 };
 Math.__name__ = true;
 var Reflect = function() { };
@@ -1638,7 +1646,7 @@ glaze_render_renderers_webgl_WebGLShaders.CompileShader = function(gl,shaderSrc,
 	gl.shaderSource(shader,src);
 	gl.compileShader(shader);
 	if(!gl.getShaderParameter(shader,35713)) {
-		js_Lib.alert(gl.getShaderInfoLog(shader));
+		js_Browser.alert(gl.getShaderInfoLog(shader));
 		return null;
 	}
 	return shader;
@@ -1651,7 +1659,7 @@ glaze_render_renderers_webgl_WebGLShaders.CompileProgram = function(gl,vertexSrc
 	gl.attachShader(shaderProgram,fragmentShader);
 	gl.linkProgram(shaderProgram);
 	if(!gl.getProgramParameter(shaderProgram,35714)) {
-		js_Lib.alert("Could not initialize program");
+		js_Browser.alert("Could not initialize program");
 		console.log(vertexSrc);
 		console.log(fragmentSrc);
 		console.log(gl.getProgramInfoLog(shaderProgram));
@@ -3805,10 +3813,10 @@ js_Boot.__isNativeObj = function(o) {
 js_Boot.__resolveNativeClass = function(name) {
 	return (Function("return typeof " + name + " != \"undefined\" ? " + name + " : null"))();
 };
-var js_Lib = function() { };
-js_Lib.__name__ = true;
-js_Lib.alert = function(v) {
-	alert(js_Boot.__string_rec(v,""));
+var js_Browser = function() { };
+js_Browser.__name__ = true;
+js_Browser.alert = function(v) {
+	window.alert(js_Boot.__string_rec(v,""));
 };
 var js_html__$CanvasElement_CanvasUtil = function() { };
 js_html__$CanvasElement_CanvasUtil.__name__ = true;

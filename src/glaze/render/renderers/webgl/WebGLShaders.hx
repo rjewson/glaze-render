@@ -22,7 +22,7 @@ class WebGLShaders
         gl.shaderSource(shader,src);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader,RenderingContext.COMPILE_STATUS)) {
-            js.Lib.alert(gl.getShaderInfoLog(shader));
+            js.Browser.alert(gl.getShaderInfoLog(shader));
             return null;
         }
         return shader;
@@ -38,7 +38,7 @@ class WebGLShaders
         gl.linkProgram(shaderProgram);
 
         if (!gl.getProgramParameter(shaderProgram,RenderingContext.LINK_STATUS)) {
-            js.Lib.alert("Could not initialize program");
+            js.Browser.alert("Could not initialize program");
             trace(vertexSrc);
             trace(fragmentSrc);
             trace(gl.getProgramInfoLog(shaderProgram));
