@@ -1,1 +1,3 @@
-gith# glaze-render
+# glaze-render
+
+A 2D display list webgl renderer.

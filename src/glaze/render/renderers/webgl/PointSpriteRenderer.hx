@@ -1,5 +1,5 @@
 
-package wgr.renderers.webgl;
+package glaze.render.renderers.webgl;
 
 import js.html.ArrayBuffer;
 import js.html.Float32Array;

@@ -1,5 +1,5 @@
 
-package wgr.renderers.webgl;
+package glaze.render.renderers.webgl;
 
 import js.html.ArrayBuffer;
 import js.html.Float32Array;
@@ -7,18 +7,18 @@ import js.html.Uint8ClampedArray;
 import js.html.webgl.Buffer;
 import js.html.webgl.RenderingContext;
 import js.html.webgl.Texture;
-import wgr.display.Camera;
-import wgr.display.Stage;
-import wgr.geom.Point;
-import wgr.geom.AABB;
-import wgr.renderers.webgl.ShaderWrapper;
+import glaze.render.display.Camera;
+import glaze.render.display.Stage;
+import glaze.geom.Vector2;
+import glaze.geom.AABB2;
+import glaze.render.renderers.webgl.ShaderWrapper;
 
 class PointSpriteLightMapRenderer implements IRenderer
 {
 
     public var gl:RenderingContext;
 
-    public var projection:Point;
+    public var projection:Vector2;
 
     public var pointSpriteShader:ShaderWrapper;
     
@@ -39,7 +39,7 @@ class PointSpriteLightMapRenderer implements IRenderer
     public function Init(gl:RenderingContext,camera:Camera) {
         this.gl = gl;
         this.camera = camera;
-        projection = new Point();
+        projection = new Vector2();
         pointSpriteShader = new ShaderWrapper(gl, WebGLShaders.CompileProgram(gl,SPRITE_VERTEX_SHADER,SPRITE_FRAGMENT_SHADER));
         dataBuffer =  gl.createBuffer();
     }
@@ -77,7 +77,7 @@ class PointSpriteLightMapRenderer implements IRenderer
         indexRun++;
     }
 
-    public function Render(clip:AABB) {
+    public function Render(clip:AABB2) {
         gl.enable(RenderingContext.BLEND);
         gl.blendFunc(RenderingContext.SRC_ALPHA, RenderingContext.ONE_MINUS_SRC_ALPHA);
 
