@@ -66,8 +66,8 @@ class PointSpriteLightMapRenderer implements IRenderer
 
     public function AddSpriteToBatch(x:Float,y:Float,size:Int,alpha:Int,red:Int,green:Int,blue:Int) {
         var index = indexRun * 4;
-        data[index+0] = Std.int(x + camera.position.x);
-        data[index+1] = Std.int(y + camera.position.y);   
+        data[index+0] = x + camera.position.x;
+        data[index+1] = y + camera.position.y;   
         data[index+2] = size;
         index *= 4;
         data8[index+12] = red;

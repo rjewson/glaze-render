@@ -854,6 +854,13 @@ glaze_geom_Vector2.prototype = {
 		this.x -= 2 * d * normal.x;
 		this.y -= 2 * d * normal.y;
 	}
+	,interpolate: function(v1,v2,t) {
+		this.x = v1.x;
+		this.y = v1.y;
+		this.multEquals(1 - t);
+		this.x += v2.x * t;
+		this.y += v2.y * t;
+	}
 	,__class__: glaze_geom_Vector2
 };
 var glaze_render_display_DisplayObject = function() {
@@ -1680,8 +1687,8 @@ glaze_render_texture_BaseTexture.prototype = {
 		gl.bindTexture(3553,this.texture);
 		gl.pixelStorei(37441,1);
 		gl.texImage2D(3553,0,6408,6408,5121,this.source);
-		gl.texParameteri(3553,10240,9729);
-		gl.texParameteri(3553,10241,9729);
+		gl.texParameteri(3553,10240,9728);
+		gl.texParameteri(3553,10241,9728);
 		if(this.powerOfTwo) {
 			gl.texParameteri(3553,10242,10497);
 			gl.texParameteri(3553,10243,10497);
