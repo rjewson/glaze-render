@@ -25,8 +25,8 @@ class TextureManager
     }
 
     public function AddTexture(id:String,image:Image):BaseTexture {
-        var baseTexture = new BaseTexture(image);
-        baseTexture.RegisterTexture(gl);
+        var baseTexture = BaseTexture.FromImage(gl,image);
+        // baseTexture.RegisterTexture();
         baseTextures.set(id,baseTexture);
         return baseTexture;
     }

@@ -1,6 +1,7 @@
 package glaze.render.renderers.webgl;
 
 import glaze.ds.TypedArray2D;
+import glaze.render.texture.BaseTexture;
 import js.html.Float32Array;
 import js.html.Image;
 import js.html.Uint32Array;
@@ -30,14 +31,14 @@ class FBOLighting implements IRenderer
 
     public var texture:Texture;
 
-    public var fb:js.html.webgl.Framebuffer;
-    public var rb:js.html.webgl.Renderbuffer;
-
     public var quadVertBuffer:Buffer;
 
     public var screenShader:ShaderWrapper;
+    public var surfaceShader:ShaderWrapper;
 
     public var camera:Camera;
+
+    public var surface:BaseTexture;
 
     public function new()
     {
@@ -69,37 +70,19 @@ class FBOLighting implements IRenderer
         );
 
         gl.bufferData(RenderingContext.ARRAY_BUFFER, quadVerts, RenderingContext.STATIC_DRAW);
+       
+        gl.bufferData(RenderingContext.ARRAY_BUFFER, quadVerts, RenderingContext.STATIC_DRAW);
+
         screenShader = new ShaderWrapper(gl, WebGLShaders.CompileProgram(gl,SCREEN_VERTEX_SHADER,SCREEN_FRAGMENT_SHADER));
+        surfaceShader = new ShaderWrapper(gl, WebGLShaders.CompileProgram(gl,SURFACE_VERTEX_SHADER,SURFACE_FRAGMENT_SHADER));
 
-        setupFBO();
-    }
+        surface = new BaseTexture(gl,32,32);
+// // At init time. Clear the back buffer.
+// gl.clearColor(1,1,1,1);
+// gl.clear(RenderingContext.COLOR_BUFFER_BIT);
 
-    public function setupFBO() {
-        texture = gl.createTexture();
-        fb = gl.createFramebuffer();
-        rb = gl.createRenderbuffer();
-
-        gl.bindTexture(RenderingContext.TEXTURE_2D, texture);
-        gl.texImage2D(RenderingContext.TEXTURE_2D,0,RenderingContext.RGBA,32,32,0,RenderingContext.RGBA,RenderingContext.UNSIGNED_BYTE,null);
-
-        gl.texParameteri(RenderingContext.TEXTURE_2D, RenderingContext.TEXTURE_MAG_FILTER, RenderingContext.LINEAR);
-        gl.texParameteri(RenderingContext.TEXTURE_2D, RenderingContext.TEXTURE_MIN_FILTER, RenderingContext.LINEAR); // Worth it to mipmap here?
-        gl.texParameteri(RenderingContext.TEXTURE_2D,RenderingContext.TEXTURE_WRAP_S,RenderingContext.CLAMP_TO_EDGE);
-        gl.texParameteri(RenderingContext.TEXTURE_2D,RenderingContext.TEXTURE_WRAP_T,RenderingContext.CLAMP_TO_EDGE);
-
-        
-        gl.bindFramebuffer(RenderingContext.FRAMEBUFFER,fb);
-        gl.framebufferTexture2D(RenderingContext.FRAMEBUFFER,RenderingContext.COLOR_ATTACHMENT0,RenderingContext.TEXTURE_2D,texture,0);
-
-        gl.bindRenderbuffer(RenderingContext.RENDERBUFFER,rb);
-
-        gl.renderbufferStorage(RenderingContext.RENDERBUFFER,RenderingContext.DEPTH_COMPONENT16,32,32);
-        gl.framebufferRenderbuffer(RenderingContext.FRAMEBUFFER,RenderingContext.DEPTH_ATTACHMENT,RenderingContext.RENDERBUFFER,rb);
-
-        gl.bindTexture(RenderingContext.TEXTURE_2D,null);
-        gl.bindRenderbuffer(RenderingContext.RENDERBUFFER,null);
-        gl.bindFramebuffer(RenderingContext.FRAMEBUFFER,null);
-
+// // Turn off rendering to alpha
+// gl.colorMask(true, true, true, false); 
     }
 
     public function Resize(width:Int,height:Int) {
@@ -121,40 +104,95 @@ class FBOLighting implements IRenderer
         //return Std.int(v);
         //return cast (0.5 + v) >> 0;
         //v-=0.5;
-        return Math.round( v * 10) / 10;
+        return Math.round( v * 10) / 10; 
     }
 
+    function setCol() {
+        gl.clearColor(1,0,0,0.5);
+        gl.clear(RenderingContext.COLOR_BUFFER_BIT);
+        gl.colorMask(true, true, true, true); 
+    }
+
+    function drawSurface() {
+        // gl.clearColor(1,0,0,0.5);
+        gl.clearColor(0,0,0,0);
+        gl.clear(RenderingContext.COLOR_BUFFER_BIT);
+        gl.colorMask(true, true, true, true); 
+        gl.useProgram(surfaceShader.program);
+        gl.uniform2fv(untyped surfaceShader.uniform.viewportSize, scaledViewportSize);
+        gl.uniform2f( untyped surfaceShader.uniform.resolution, 800, 600 );
+        gl.uniformMatrix3fv( untyped surfaceShader.uniform.lights, false, [ 16*32,16*32,2*32 ,0,0,0 ,0,0,0 ] );
+        gl.bindBuffer( RenderingContext.ARRAY_BUFFER, quadVertBuffer );
+        gl.vertexAttribPointer(untyped surfaceShader.attribute.position, 2, RenderingContext.FLOAT, false, 0, 0);
+        gl.drawArrays(RenderingContext.TRIANGLES, 0, 6);
+    }
 
     public function Render(clip:AABB2) {
-        trace("r");
         var x = -camera.position.x / (tileScale*2);
         var y = -camera.position.y / (tileScale*2);
         //x += tileSize/2;
         //y += tileSize/2;
 
-        gl.enable(RenderingContext.BLEND);
-        gl.blendFunc(RenderingContext.SRC_ALPHA, RenderingContext.ONE_MINUS_SRC_ALPHA);
+        // gl.enable(RenderingContext.BLEND);
+        // gl.blendFunc(RenderingContext.SRC_ALPHA, RenderingContext.ONE_MINUS_SRC_ALPHA);
+
+        // surface.drawTo(setCol);
+        surface.drawTo(drawSurface);
+
+        //gl.useProgram(surfaceShader.program);
 
         gl.useProgram(screenShader.program);
-
         gl.uniform2fv(untyped screenShader.uniform.viewportSize, scaledViewportSize);
+        gl.uniform2f( untyped screenShader.uniform.resolution, 800, 600 );
+        surface.bind(0);
+        gl.uniform1i( untyped screenShader.uniform.texture,0);
 
-
-gl.uniform2f( untyped screenShader.uniform.resolution, 800, 600 );
-gl.uniform1i( untyped screenShader.uniform.texture, 1 );
-gl.bindBuffer( RenderingContext.ARRAY_BUFFER, quadVertBuffer );
-gl.vertexAttribPointer(untyped screenShader.attribute.position, 2, RenderingContext.FLOAT, false, 0, 0);
-
-gl.activeTexture( RenderingContext.TEXTURE1 );
-gl.bindTexture( RenderingContext.TEXTURE_2D, texture );
-// Render front buffer to screen
-gl.bindFramebuffer( RenderingContext.FRAMEBUFFER, null );
-// gl.clear( RenderingContext.COLOR_BUFFER_BIT | RenderingContext.DEPTH_BUFFER_BIT );
-
+        gl.bindBuffer( RenderingContext.ARRAY_BUFFER, quadVertBuffer );
+        gl.vertexAttribPointer(untyped screenShader.attribute.position, 2, RenderingContext.FLOAT, false, 0, 0);
 
         gl.drawArrays(RenderingContext.TRIANGLES, 0, 6);
+        surface.unbind(0);
+
     }
     
+    public static var SURFACE_VERTEX_SHADER:Array<String> = [
+        "precision mediump float;",
+        "attribute vec2 position;",
+
+        "void main(void) {",
+        "   gl_Position = vec4(position, 0.0, 1.0);",
+        "}"
+    ];
+
+    public static var SURFACE_FRAGMENT_SHADER:Array<String> = [
+       "precision mediump float;",
+
+        "uniform sampler2D texture;",
+        "uniform vec2 resolution;",
+        "uniform mat3 lights;",
+
+        "float accumulatedLight = 0.0;",
+
+        "float lightValue(vec3 light)",
+        "{",
+        "   return 1.0;",
+        "}",
+
+
+        "void main(void) {",
+        //"    vec2 uv = gl_FragCoord.xy/resolution.xy;",
+        //"    gl_FragColor = vec4 (0.0, 0.0, 1.0, 1.0);",
+        // "    gl_FragColor = texture2D(texture,uv);",
+        "      vec2 tilePos = (gl_FragCoord.xy * vec2(32.0,32.0)) + vec2(16.0,16.0);",
+        "      vec2 lightPos = vec2(lights[0][0],lights[0][1]);",
+        "      vec2 dist = tilePos-lightPos;",
+        "      gl_FragColor = vec4 (0.0, 0.0, 0.0, length(dist)/lights[0][2]);",
+        "}"
+    ];
+
+
+    //Draw to screen programs
+
     public static var SCREEN_VERTEX_SHADER:Array<String> = [
         "precision mediump float;",
         "attribute vec2 position;",
@@ -172,7 +210,7 @@ gl.bindFramebuffer( RenderingContext.FRAMEBUFFER, null );
 
         "void main(void) {",
         "    vec2 uv = gl_FragCoord.xy/resolution.xy;",
-        "    gl_FragColor = vec4 (0.0, 1.0, 0.0, 0.5);",
+        //"    gl_FragColor = vec4 (0.0, 1.0, 0.0, 0.5);",
         "    gl_FragColor = texture2D(texture,uv);",
         "}"
     ];

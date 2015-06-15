@@ -28,7 +28,7 @@ class WebGLRenderer
     public var gl:RenderingContext;
     public var contextAttributes:ContextAttributes;
 
-    private var contextLost:Bool;
+    private var contextLost:Bool; 
 
     public var renderers:Array<IRenderer>;
 
@@ -61,7 +61,7 @@ class WebGLRenderer
         gl.colorMask(true,true,true,contextAttributes.alpha);
         gl.clearColor(0,0,0,1);
     }
-
+  
     public function Resize(width:Int,height:Int) {
         this.width = width;
         this.height = height;

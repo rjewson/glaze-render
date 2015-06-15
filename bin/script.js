@@ -1673,30 +1673,63 @@ glaze_render_renderers_webgl_WebGLShaders.CompileProgram = function(gl,vertexSrc
 	}
 	return shaderProgram;
 };
-var glaze_render_texture_BaseTexture = function(source) {
-	this.source = source;
+var glaze_render_texture_BaseTexture = function(gl,width,height) {
+	this.gl = gl;
 	this.powerOfTwo = false;
-	this.resolution = 1;
-	this.width = source.width;
-	this.height = source.width;
+	this.width = width;
+	this.height = width;
+	this.RegisterTexture();
 };
 glaze_render_texture_BaseTexture.__name__ = true;
+glaze_render_texture_BaseTexture.FromImage = function(gl,image) {
+	var texture = new glaze_render_texture_BaseTexture(gl,image.width,image.height);
+	gl.texImage2D(3553,0,6408,6408,5121,image);
+	return texture;
+};
 glaze_render_texture_BaseTexture.prototype = {
-	RegisterTexture: function(gl) {
-		if(this.texture == null) this.texture = gl.createTexture();
-		gl.bindTexture(3553,this.texture);
-		gl.pixelStorei(37441,1);
-		gl.texImage2D(3553,0,6408,6408,5121,this.source);
-		gl.texParameteri(3553,10240,9728);
-		gl.texParameteri(3553,10241,9728);
+	RegisterTexture: function() {
+		if(this.texture == null) this.texture = this.gl.createTexture();
+		this.gl.bindTexture(3553,this.texture);
+		this.gl.pixelStorei(37441,1);
+		this.gl.texParameteri(3553,10240,9728);
+		this.gl.texParameteri(3553,10241,9728);
 		if(this.powerOfTwo) {
-			gl.texParameteri(3553,10242,10497);
-			gl.texParameteri(3553,10243,10497);
+			this.gl.texParameteri(3553,10242,10497);
+			this.gl.texParameteri(3553,10243,10497);
 		} else {
-			gl.texParameteri(3553,10242,33071);
-			gl.texParameteri(3553,10243,33071);
+			this.gl.texParameteri(3553,10242,33071);
+			this.gl.texParameteri(3553,10243,33071);
 		}
-		gl.bindTexture(3553,null);
+		this.gl.texImage2D(3553,0,6408,this.width,this.height,0,6408,5121,null);
+	}
+	,bind: function(unit) {
+		this.gl.activeTexture(33984 + unit);
+		this.gl.bindTexture(3553,this.texture);
+	}
+	,unbind: function(unit) {
+		this.gl.activeTexture(33984 + unit);
+		this.gl.bindTexture(3553,null);
+	}
+	,drawTo: function(callback) {
+		var v = this.gl.getParameter(2978);
+		if(this.framebuffer == null) this.framebuffer = this.gl.createFramebuffer();
+		if(this.renderbuffer == null) this.renderbuffer = this.gl.createRenderbuffer();
+		this.gl.bindFramebuffer(36160,this.framebuffer);
+		this.gl.bindRenderbuffer(36161,this.renderbuffer);
+		if(this.width != (this.renderbuffer.width || this.height != this.renderbuffer.height)) {
+			this.renderbuffer.width = this.width;
+			this.renderbuffer.height = this.height;
+			this.gl.renderbufferStorage(36161,33189,this.width,this.height);
+			console.log("resize");
+		}
+		this.gl.framebufferTexture2D(36160,36064,3553,this.texture,0);
+		this.gl.framebufferRenderbuffer(36160,36096,36161,this.renderbuffer);
+		if(this.gl.checkFramebufferStatus(36160) != 36053) console.log("fuckit");
+		this.gl.viewport(0,0,this.width,this.height);
+		callback();
+		this.gl.bindFramebuffer(36160,null);
+		this.gl.bindRenderbuffer(36161,null);
+		this.gl.viewport(v[0],v[1],v[2],v[3]);
 	}
 	,UnregisterTexture: function(gl) {
 		if(this.texture != null) {
@@ -1740,8 +1773,7 @@ var glaze_render_texture_TextureManager = function(gl) {
 glaze_render_texture_TextureManager.__name__ = true;
 glaze_render_texture_TextureManager.prototype = {
 	AddTexture: function(id,image) {
-		var baseTexture = new glaze_render_texture_BaseTexture(image);
-		baseTexture.RegisterTexture(this.gl);
+		var baseTexture = glaze_render_texture_BaseTexture.FromImage(this.gl,image);
 		this.baseTextures.set(id,baseTexture);
 		return baseTexture;
 	}
