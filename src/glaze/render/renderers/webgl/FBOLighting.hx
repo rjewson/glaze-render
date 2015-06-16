@@ -59,13 +59,22 @@ class FBOLighting implements IRenderer
 
         var quadVerts = new js.html.Float32Array(
             [
-                -1, -1,
-                 1, -1,
-                 1,  1,
-
-                -1, -1,
-                 1,  1,
                 -1,  1,
+                 1,  1,
+                 1, -1,
+
+                1,-1,
+                -1,-1,
+                -1,1
+
+
+                // -1, -1,
+                //  1, -1,
+                //  1,  1,
+
+                // -1, -1,
+                //  1,  1,
+                // -1,  1,
             ]
         );
 
@@ -76,7 +85,7 @@ class FBOLighting implements IRenderer
         screenShader = new ShaderWrapper(gl, WebGLShaders.CompileProgram(gl,SCREEN_VERTEX_SHADER,SCREEN_FRAGMENT_SHADER));
         surfaceShader = new ShaderWrapper(gl, WebGLShaders.CompileProgram(gl,SURFACE_VERTEX_SHADER,SURFACE_FRAGMENT_SHADER));
 
-        surface = new BaseTexture(gl,32,32);
+        surface = new BaseTexture(gl,Std.int(800/32),Std.int(640/32));
 // // At init time. Clear the back buffer.
 // gl.clearColor(1,1,1,1);
 // gl.clear(RenderingContext.COLOR_BUFFER_BIT);
@@ -114,6 +123,7 @@ class FBOLighting implements IRenderer
     }
 
     function drawSurface() {
+        js.Browser.console.time("richard");
         // gl.clearColor(1,0,0,0.5);
         gl.clearColor(0,0,0,0);
         gl.clear(RenderingContext.COLOR_BUFFER_BIT);
@@ -121,10 +131,11 @@ class FBOLighting implements IRenderer
         gl.useProgram(surfaceShader.program);
         gl.uniform2fv(untyped surfaceShader.uniform.viewportSize, scaledViewportSize);
         gl.uniform2f( untyped surfaceShader.uniform.resolution, 800, 600 );
-        gl.uniformMatrix3fv( untyped surfaceShader.uniform.lights, false, [ 16*32,16*32,2*32 ,0,0,0 ,0,0,0 ] );
+        gl.uniformMatrix3fv( untyped surfaceShader.uniform.lights, false, [ 12.5*32,12.5*32,6*32 ,4*32,4*32,8*32 ,0,0,0 ] );
         gl.bindBuffer( RenderingContext.ARRAY_BUFFER, quadVertBuffer );
         gl.vertexAttribPointer(untyped surfaceShader.attribute.position, 2, RenderingContext.FLOAT, false, 0, 0);
         gl.drawArrays(RenderingContext.TRIANGLES, 0, 6);
+        js.Browser.console.timeEnd("richard");
     }
 
     public function Render(clip:AABB2) {
@@ -173,9 +184,16 @@ class FBOLighting implements IRenderer
 
         "float accumulatedLight = 0.0;",
 
-        "float lightValue(vec3 light)",
+        "void applyLight(vec2 tilePos,vec3 light)",
         "{",
-        "   return 1.0;",
+        "   vec2 dist = tilePos-light.xy;",
+        "   float intensity = 1.0 - length(dist)/light.z;",
+        "   for (int i=0; i<128; i++) {",
+        "   accumulatedLight = max(accumulatedLight,intensity);",
+        "   }",
+
+        //"   float lightValue = length(dist)/light.z;",
+        //"   accumulatedLight = max(accumulatedLight,lightValue);",
         "}",
 
 
@@ -184,9 +202,13 @@ class FBOLighting implements IRenderer
         //"    gl_FragColor = vec4 (0.0, 0.0, 1.0, 1.0);",
         // "    gl_FragColor = texture2D(texture,uv);",
         "      vec2 tilePos = (gl_FragCoord.xy * vec2(32.0,32.0)) + vec2(16.0,16.0);",
-        "      vec2 lightPos = vec2(lights[0][0],lights[0][1]);",
-        "      vec2 dist = tilePos-lightPos;",
-        "      gl_FragColor = vec4 (0.0, 0.0, 0.0, length(dist)/lights[0][2]);",
+        // "      vec2 lightPos = vec2(lights[0][0],lights[0][1]);",
+            //"      vec2 dist = tilePos-lightPos;",
+            //"      gl_FragColor = vec4 (0.0, 0.0, 0.0, length(dist)/lights[0][2]);",
+        "   applyLight(tilePos,lights[0]);",
+        "   applyLight(tilePos,lights[1]);",
+        "   gl_FragColor = vec4 (0.0, 0.0, 0.0, 1.0-accumulatedLight);",
+
         "}"
     ];
 

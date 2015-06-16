@@ -36,6 +36,7 @@ class BaseTexture
             texture = gl.createTexture();
         gl.bindTexture(RenderingContext.TEXTURE_2D,texture);
         gl.pixelStorei(RenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL,1);
+        // gl.pixelStorei(RenderingContext.UNPACK_FLIP_Y_WEBGL, 1);
         gl.texParameteri(RenderingContext.TEXTURE_2D,RenderingContext.TEXTURE_MAG_FILTER,RenderingContext.NEAREST);
         gl.texParameteri(RenderingContext.TEXTURE_2D,RenderingContext.TEXTURE_MIN_FILTER,RenderingContext.NEAREST);
         if (powerOfTwo) {
