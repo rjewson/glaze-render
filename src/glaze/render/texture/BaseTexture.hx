@@ -24,18 +24,19 @@ class BaseTexture
     public var renderbuffer:Renderbuffer;
 
     public function new(gl:RenderingContext,width:Int,height:Int) {
+        // js.Lib.debug();
         this.gl = gl;
         powerOfTwo = false;
         this.width = width;
-        this.height = width;    
+        this.height = height;    
         RegisterTexture();     
-    }
+    } 
 
     public function RegisterTexture() {
         if (texture==null)
             texture = gl.createTexture();
         gl.bindTexture(RenderingContext.TEXTURE_2D,texture);
-        gl.pixelStorei(RenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL,1);
+        gl.pixelStorei(RenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL,0 );
         // gl.pixelStorei(RenderingContext.UNPACK_FLIP_Y_WEBGL, 1);
         gl.texParameteri(RenderingContext.TEXTURE_2D,RenderingContext.TEXTURE_MAG_FILTER,RenderingContext.NEAREST);
         gl.texParameteri(RenderingContext.TEXTURE_2D,RenderingContext.TEXTURE_MIN_FILTER,RenderingContext.NEAREST);
@@ -69,6 +70,7 @@ class BaseTexture
 
 
     public function drawTo(callback:Void->Void) {
+        trace(width,height);
         //var v = gl.getParameter(RenderingContext.VIEWPORT);
         if (framebuffer==null)
             framebuffer = gl.createFramebuffer();
@@ -90,7 +92,7 @@ class BaseTexture
         gl.bindFramebuffer(RenderingContext.FRAMEBUFFER, null);
         gl.bindRenderbuffer(RenderingContext.RENDERBUFFER, null);
         // gl.viewport(v[0], v[1], v[2], v[3]);
-        gl.viewport(0, 0, 800, 600);
+        gl.viewport(0, 0, 800, 640);
     }
 
     public function UnregisterTexture(gl:RenderingContext) {

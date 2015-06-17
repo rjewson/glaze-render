@@ -1,4 +1,4 @@
-
+ 
 package glaze.render.renderers.webgl;
 
 import js.html.CanvasElement;
