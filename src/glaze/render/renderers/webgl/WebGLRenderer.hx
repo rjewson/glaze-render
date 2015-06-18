@@ -60,6 +60,9 @@ class WebGLRenderer
         gl.enable(RenderingContext.BLEND);
         gl.colorMask(true,true,true,contextAttributes.alpha);
         gl.clearColor(0,0,0,1);
+
+        if (!gl.getExtension('OES_texture_float')) 
+            trace('New browser time: Float textures not supported');
     }
   
     public function Resize(width:Int,height:Int) {

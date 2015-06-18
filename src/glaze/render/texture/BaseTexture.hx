@@ -23,16 +23,16 @@ class BaseTexture
     public var framebuffer:Framebuffer;
     public var renderbuffer:Renderbuffer;
 
-    public function new(gl:RenderingContext,width:Int,height:Int) {
+    public function new(gl:RenderingContext,width:Int,height:Int,floatingPoint:Bool=false) {
         // js.Lib.debug();
         this.gl = gl;
         powerOfTwo = false;
         this.width = width;
         this.height = height;    
-        RegisterTexture();     
+        RegisterTexture(floatingPoint);     
     } 
 
-    public function RegisterTexture() {
+    public function RegisterTexture(fp:Bool) {
         if (texture==null)
             texture = gl.createTexture();
         gl.bindTexture(RenderingContext.TEXTURE_2D,texture);
@@ -49,7 +49,7 @@ class BaseTexture
         }
         // gl.bindTexture(RenderingContext.TEXTURE_2D,null);
         //gl.texImage2D(RenderingContext.TEXTURE_2D,0,RenderingContext.RGBA,RenderingContext.RGBA,RenderingContext.UNSIGNED_BYTE,source);
-        gl.texImage2D(RenderingContext.TEXTURE_2D,0,RenderingContext.RGBA, width, height, 0, RenderingContext.RGBA,RenderingContext.UNSIGNED_BYTE, null);
+        gl.texImage2D(RenderingContext.TEXTURE_2D,0,RenderingContext.RGBA, width, height, 0, RenderingContext.RGBA,fp?RenderingContext.FLOAT:RenderingContext.UNSIGNED_BYTE, null);
     }
 
     public static function FromImage(gl:RenderingContext,image:Image) {
@@ -70,7 +70,6 @@ class BaseTexture
 
 
     public function drawTo(callback:Void->Void) {
-        trace(width,height);
         //var v = gl.getParameter(RenderingContext.VIEWPORT);
         if (framebuffer==null)
             framebuffer = gl.createFramebuffer();
