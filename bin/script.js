@@ -1008,7 +1008,7 @@ glaze_render_display_DisplayObjectContainer.prototype = $extend(glaze_render_dis
 	}
 	,removeChildAt: function(index) {
 		var child = this.findChildByIndex(index);
-		haxe_Log.trace(child,{ fileName : "DisplayObjectContainer.hx", lineNumber : 69, className : "glaze.render.display.DisplayObjectContainer", methodName : "removeChildAt"});
+		console.log(child);
 		this.removeChild(child);
 		this.debug();
 		return child;
@@ -1084,7 +1084,7 @@ glaze_render_display_DisplayObjectContainer.prototype = $extend(glaze_render_dis
 	,debug: function() {
 		var child = this.head;
 		while(child != null) {
-			haxe_Log.trace(child.id,{ fileName : "DisplayObjectContainer.hx", lineNumber : 169, className : "glaze.render.display.DisplayObjectContainer", methodName : "debug"});
+			console.log(child.id);
 			child = child.next;
 		}
 	}
@@ -1604,6 +1604,7 @@ glaze_render_renderers_webgl_WebGLRenderer.prototype = {
 		this.gl.enable(3042);
 		this.gl.colorMask(true,true,true,this.contextAttributes.alpha);
 		this.gl.clearColor(0,0,0,1);
+		if(!this.gl.getExtension("OES_texture_float")) console.log("New browser time: Float textures not supported");
 	}
 	,Resize: function(width,height) {
 		this.width = width;
@@ -1631,11 +1632,11 @@ glaze_render_renderers_webgl_WebGLRenderer.prototype = {
 	}
 	,onContextLost: function(event) {
 		this.contextLost = true;
-		haxe_Log.trace("webGL Context Lost",{ fileName : "WebGLRenderer.hx", lineNumber : 95, className : "glaze.render.renderers.webgl.WebGLRenderer", methodName : "onContextLost"});
+		console.log("webGL Context Lost");
 	}
 	,onContextRestored: function(event) {
 		this.contextLost = false;
-		haxe_Log.trace("webGL Context Restored",{ fileName : "WebGLRenderer.hx", lineNumber : 100, className : "glaze.render.renderers.webgl.WebGLRenderer", methodName : "onContextRestored"});
+		console.log("webGL Context Restored");
 	}
 	,__class__: glaze_render_renderers_webgl_WebGLRenderer
 };
@@ -1667,18 +1668,19 @@ glaze_render_renderers_webgl_WebGLShaders.CompileProgram = function(gl,vertexSrc
 	gl.linkProgram(shaderProgram);
 	if(!gl.getProgramParameter(shaderProgram,35714)) {
 		js_Browser.alert("Could not initialize program");
-		haxe_Log.trace(vertexSrc,{ fileName : "WebGLShaders.hx", lineNumber : 42, className : "glaze.render.renderers.webgl.WebGLShaders", methodName : "CompileProgram"});
-		haxe_Log.trace(fragmentSrc,{ fileName : "WebGLShaders.hx", lineNumber : 43, className : "glaze.render.renderers.webgl.WebGLShaders", methodName : "CompileProgram"});
-		haxe_Log.trace(gl.getProgramInfoLog(shaderProgram),{ fileName : "WebGLShaders.hx", lineNumber : 44, className : "glaze.render.renderers.webgl.WebGLShaders", methodName : "CompileProgram"});
+		console.log(vertexSrc);
+		console.log(fragmentSrc);
+		console.log(gl.getProgramInfoLog(shaderProgram));
 	}
 	return shaderProgram;
 };
-var glaze_render_texture_BaseTexture = function(gl,width,height) {
+var glaze_render_texture_BaseTexture = function(gl,width,height,floatingPoint) {
+	if(floatingPoint == null) floatingPoint = false;
 	this.gl = gl;
 	this.powerOfTwo = false;
 	this.width = width;
 	this.height = height;
-	this.RegisterTexture();
+	this.RegisterTexture(floatingPoint);
 };
 glaze_render_texture_BaseTexture.__name__ = true;
 glaze_render_texture_BaseTexture.FromImage = function(gl,image) {
@@ -1687,7 +1689,7 @@ glaze_render_texture_BaseTexture.FromImage = function(gl,image) {
 	return texture;
 };
 glaze_render_texture_BaseTexture.prototype = {
-	RegisterTexture: function() {
+	RegisterTexture: function(fp) {
 		if(this.texture == null) this.texture = this.gl.createTexture();
 		this.gl.bindTexture(3553,this.texture);
 		this.gl.pixelStorei(37441,0);
@@ -1700,7 +1702,7 @@ glaze_render_texture_BaseTexture.prototype = {
 			this.gl.texParameteri(3553,10242,33071);
 			this.gl.texParameteri(3553,10243,33071);
 		}
-		this.gl.texImage2D(3553,0,6408,this.width,this.height,0,6408,5121,null);
+		this.gl.texImage2D(3553,0,6408,this.width,this.height,0,6408,fp?5126:5121,null);
 	}
 	,bind: function(unit) {
 		this.gl.activeTexture(33984 + unit);
@@ -1711,7 +1713,6 @@ glaze_render_texture_BaseTexture.prototype = {
 		this.gl.bindTexture(3553,null);
 	}
 	,drawTo: function(callback) {
-		haxe_Log.trace(this.width,{ fileName : "BaseTexture.hx", lineNumber : 73, className : "glaze.render.texture.BaseTexture", methodName : "drawTo", customParams : [this.height]});
 		if(this.framebuffer == null) this.framebuffer = this.gl.createFramebuffer();
 		if(this.renderbuffer == null) this.renderbuffer = this.gl.createRenderbuffer();
 		this.gl.bindFramebuffer(36160,this.framebuffer);
@@ -1720,7 +1721,7 @@ glaze_render_texture_BaseTexture.prototype = {
 			this.renderbuffer.width = this.width;
 			this.renderbuffer.height = this.height;
 			this.gl.renderbufferStorage(36161,33189,this.width,this.height);
-			haxe_Log.trace("resize",{ fileName : "BaseTexture.hx", lineNumber : 85, className : "glaze.render.texture.BaseTexture", methodName : "drawTo"});
+			console.log("resize");
 		}
 		this.gl.framebufferTexture2D(36160,36064,3553,this.texture,0);
 		this.gl.framebufferRenderbuffer(36160,36096,36161,this.renderbuffer);
@@ -2486,11 +2487,6 @@ var haxe__$Int64__$_$_$Int64 = function(high,low) {
 haxe__$Int64__$_$_$Int64.__name__ = true;
 haxe__$Int64__$_$_$Int64.prototype = {
 	__class__: haxe__$Int64__$_$_$Int64
-};
-var haxe_Log = function() { };
-haxe_Log.__name__ = true;
-haxe_Log.trace = function(v,infos) {
-	js_Boot.__trace(v,infos);
 };
 var haxe_crypto_Adler32 = function() {
 	this.a1 = 1;
@@ -3721,25 +3717,6 @@ js__$Boot_HaxeError.prototype = $extend(Error.prototype,{
 });
 var js_Boot = function() { };
 js_Boot.__name__ = true;
-js_Boot.__unhtml = function(s) {
-	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
-};
-js_Boot.__trace = function(v,i) {
-	var msg;
-	if(i != null) msg = i.fileName + ":" + i.lineNumber + ": "; else msg = "";
-	msg += js_Boot.__string_rec(v,"");
-	if(i != null && i.customParams != null) {
-		var _g = 0;
-		var _g1 = i.customParams;
-		while(_g < _g1.length) {
-			var v1 = _g1[_g];
-			++_g;
-			msg += "," + js_Boot.__string_rec(v1,"");
-		}
-	}
-	var d;
-	if(typeof(document) != "undefined" && (d = document.getElementById("haxe:trace")) != null) d.innerHTML += js_Boot.__unhtml(msg) + "<br/>"; else if(typeof console != "undefined" && console.log != null) console.log(msg);
-};
 js_Boot.getClass = function(o) {
 	if((o instanceof Array) && o.__enum__ == null) return Array; else {
 		var cl = o.__class__;

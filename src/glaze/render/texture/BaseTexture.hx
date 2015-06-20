@@ -96,7 +96,7 @@ class BaseTexture
 
     public function UnregisterTexture(gl:RenderingContext) {
         if (texture!=null) {
-            //texture
+            //  
         }
     }
 
