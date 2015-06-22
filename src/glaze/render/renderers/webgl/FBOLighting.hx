@@ -105,11 +105,11 @@ class FBOLighting implements IRenderer
         indexRun = 0;
     }
 
-    public function addLight(x:Float,y:Float,intensity:Float) {
+    public function addLight(x:Float,y:Float,intensity:Float,red:Int,green:Int,blue:Int) {
         lightData[indexRun++] = x;  //x
         lightData[indexRun++] = y;  //y
         lightData[indexRun++] = intensity;  //dist
-        lightData[indexRun++] = 0;
+        lightData[indexRun++] = (red<<16 | green<<8 | blue) / (1<<24);
     }
 
     function drawSurface() {
@@ -125,7 +125,7 @@ class FBOLighting implements IRenderer
         // reset();
         // addLight(400,100,300);
         // addLight(100,600,100);
-        addLight(0,0,0);
+        addLight(0,0,0,0,0,0);
 
         var x = camera.position.x;
         var y = camera.position.y;
@@ -133,7 +133,8 @@ class FBOLighting implements IRenderer
         lightDataTexture.bind(0);
         gl.texImage2D(RenderingContext.TEXTURE_2D, 0, RenderingContext.RGBA, 8, 8, 0, RenderingContext.RGBA, RenderingContext.FLOAT, lightData);
 
-        gl.clearColor(0,0,0,0);
+
+        gl.clearColor(1,1,1,1);
         gl.clear(RenderingContext.COLOR_BUFFER_BIT);
         gl.colorMask(true, true, true, true); 
         gl.useProgram(surfaceShader.program);
@@ -157,9 +158,9 @@ class FBOLighting implements IRenderer
 
         surface.drawTo(drawSurface);
 
-        //gl.enable(RenderingContext.BLEND);
+        gl.enable(RenderingContext.BLEND);
         // gl.blendFunc(RenderingContext.SRC_ALPHA, RenderingContext.ONE_MINUS_SRC_ALPHA);
-        //gl.blendFunc(RenderingContext.DST_COLOR,RenderingContext.ZERO);
+        gl.blendFunc(RenderingContext.DST_COLOR,RenderingContext.ZERO);
 
         gl.useProgram(screenShader.program);
         gl.uniform2fv(untyped screenShader.uniform.viewportSize, scaledViewportSize);
@@ -196,7 +197,7 @@ class FBOLighting implements IRenderer
         "uniform vec2 gridSize;",
         "uniform int maxLights;",
 
-        "float accumulatedLight = 0.0;",
+        "vec4 accumulatedLight = vec4(0.0,0.0,0.0,1.0);",
 
         "void applyLight(vec2 tilePos,vec4 light)",
         "{",
@@ -204,7 +205,10 @@ class FBOLighting implements IRenderer
         "   float intensity = 1.0 - (dist.x*dist.x+dist.y*dist.y)/(light.z*light.z);",
         "   intensity = clamp(intensity,0.0,1.0);",
         "   intensity = intensity * intensity;",
-        "   accumulatedLight = max(accumulatedLight,intensity);",
+        "   vec3 unpackedValues = vec3(1.0, 256.0, 65536.0);",
+        "   unpackedValues = fract(unpackedValues * light.w);",
+        //"   accumulatedLight.xyz +=  unpackedValues*intensity;",//max(accumulatedLight,intensity);",
+        "   accumulatedLight.xyz =  max(unpackedValues*intensity,accumulatedLight.xyz);",//max(accumulatedLight,intensity);",
         "}",
         // "void applyLight2(vec2 tilePos,vec4 light)",
         // "{",
@@ -225,11 +229,11 @@ class FBOLighting implements IRenderer
         "       applyLight(tilePos,lightData);",
         "       index+=1.0/32.0;",
         "   }",
-        "   gl_FragColor = vec4 (0.0, 0.0, 0.0, 1.0-accumulatedLight);",
+        "   gl_FragColor = accumulatedLight;",//vec4 (accumulatedLight, accumulatedLight, accumulatedLight, 1);",
         "}"
     ];
 
-
+ 
     //Draw to screen programs
 
     public static var SCREEN_VERTEX_SHADER:Array<String> = [
