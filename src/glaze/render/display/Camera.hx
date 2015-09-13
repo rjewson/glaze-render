@@ -24,14 +24,18 @@ class Camera extends DisplayObjectContainer
         worldExtentsAABB = new AABB2();
     }
 
+    function rf(v:Float) {
+        return Math.floor(v);
+    }
+
     public function Focus(x:Float,y:Float) {
         //Need to move the camera container the oposite way to the actual coords
         realPosition.x = x;
         realPosition.y = y;
         //Clamp position inside shrunk camera extents
         cameraExtentsAABB.fitPoint(realPosition);
-        position.x = -realPosition.x+halfViewportSize.x;
-        position.y = -realPosition.y+halfViewportSize.y;
+        position.x = rf(-realPosition.x+halfViewportSize.x);
+        position.y = rf(-realPosition.y+halfViewportSize.y);
     }
 
     public function Resize(width:Int,height:Int) {

@@ -71,7 +71,7 @@ class DisplayObject
         return _visible;
     }
     public function RoundFunction(v:Float):Float {
-        // return v;
+        return v;
         // return Math.round(v);
         return Math.round( v * 10) / 10;
     }
@@ -90,8 +90,8 @@ class DisplayObject
         // var positionx = position.x;
         // var positiony = position.y;
 
-        var positionx:Int = Math.floor(position.x + 0.5);
-        var positiony:Int = Math.floor(position.y + 0.5);
+        var positionx:Int = Math.floor(position.x);
+        var positiony:Int = Math.floor(position.y);
 
         var sinR = _rotationComponents.y;//Math.sin(rotation);
         var cosR = _rotationComponents.x;//Math.cos(rotation);

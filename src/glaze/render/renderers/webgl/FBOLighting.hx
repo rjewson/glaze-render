@@ -43,6 +43,7 @@ class FBOLighting implements IRenderer
 
     public var maxLights:Int = 32;
     public var indexRun:Int;
+    public var lightCount:Int;
 
     public var fullReset:Bool = true;
 
@@ -103,9 +104,11 @@ class FBOLighting implements IRenderer
 
     public function reset() {
         indexRun = 0;
+        lightCount = 0;
     }
 
     public function addLight(x:Float,y:Float,intensity:Float,red:Int,green:Int,blue:Int) {
+        if (lightCount++==maxLights-1) return;
         lightData[indexRun++] = x;  //x
         lightData[indexRun++] = y;  //y
         lightData[indexRun++] = intensity;  //dist
@@ -187,6 +190,8 @@ class FBOLighting implements IRenderer
         "}"
     ];
 
+    //http://nullprogram.com/blog/2014/06/29/
+
     public static var SURFACE_FRAGMENT_SHADER:Array<String> = [
        "precision mediump float;",
        "precision mediump int;",
@@ -223,7 +228,7 @@ class FBOLighting implements IRenderer
         "void main(void) {",
         "   vec2 tilePos = viewOffset + (gl_FragCoord.xy * gridSize) + gridSize/2.0;",
         "   float index = 0.0;",
-        "   for (int i=0; i<32; i++) {",
+        "   for (int i=0; i<32; i++) {", 
         "       vec4 lightData = texture2D(texture,vec2(index,0.0));",
         "       if (lightData.z==0.0) break;", //End of the lights, there should be no lights at this intensity
         "       applyLight(tilePos,lightData);",

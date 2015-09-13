@@ -103,6 +103,9 @@ class TileMap implements IRenderer
 
     public function SetSpriteSheet(image:Image) {
         gl.bindTexture(RenderingContext.TEXTURE_2D, spriteSheet);
+        gl.pixelStorei(RenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL,0 );
+        // gl.texParameteri(RenderingContext.TEXTURE_2D,RenderingContext.TEXTURE_MAG_FILTER,RenderingContext.NEAREST);
+        // gl.texParameteri(RenderingContext.TEXTURE_2D,RenderingContext.TEXTURE_MIN_FILTER,RenderingContext.NEAREST);
         gl.texImage2D(RenderingContext.TEXTURE_2D, 0, RenderingContext.RGBA, RenderingContext.RGBA, RenderingContext.UNSIGNED_BYTE, image);        
         if(!filtered) {
             gl.texParameteri(RenderingContext.TEXTURE_2D, RenderingContext.TEXTURE_MAG_FILTER, RenderingContext.NEAREST);
@@ -132,8 +135,9 @@ class TileMap implements IRenderer
     }
 
     public function RoundFunction(v:Float):Float {
+        // return Math.floor(v);
         return v;
-        // return Math.round(v);
+        return Math.round(v);
         //return Std.int(v);
         //return cast (0.5 + v) >> 0;
         //v-=0.5;
@@ -141,7 +145,7 @@ class TileMap implements IRenderer
     }
 
     public function Render(clip:AABB2) {
-        var x = -camera.position.x / (tileScale*2);
+        var x = (if (true==true) -camera.position.x else 0) / (tileScale*2);
         var y = -camera.position.y / (tileScale*2);
         //x += tileSize/2;
         //y += tileSize/2;

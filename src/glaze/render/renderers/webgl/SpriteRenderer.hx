@@ -20,7 +20,9 @@ class SpriteRenderer implements IRenderer
 
     public var spriteShader:ShaderWrapper;
     
-    public var spriteBatch:WebGLBatch;        
+    public var spriteBatch:WebGLBatch;      
+
+    public var first:Bool = true;
 
     public function new() {
     }
@@ -45,13 +47,16 @@ class SpriteRenderer implements IRenderer
 
     public function Render(clip:AABB2) {
         gl.useProgram(spriteShader.program);
-        gl.enableVertexAttribArray(untyped spriteShader.attribute.aVertexPosition);
-        gl.enableVertexAttribArray(untyped spriteShader.attribute.aTextureCoord);
-        gl.enableVertexAttribArray(untyped spriteShader.attribute.aColor);
+        // if (first) {
+            gl.uniform2f(untyped spriteShader.uniform.projectionVector,projection.x,projection.y);            
+            gl.enableVertexAttribArray(untyped spriteShader.attribute.aVertexPosition);
+            gl.enableVertexAttribArray(untyped spriteShader.attribute.aTextureCoord);
+            gl.enableVertexAttribArray(untyped spriteShader.attribute.aColor);
+        //     first=false;
+        // }
         gl.vertexAttribPointer(untyped spriteShader.attribute.aVertexPosition,2,RenderingContext.FLOAT,false,20,0);
         gl.vertexAttribPointer(untyped spriteShader.attribute.aTextureCoord,2,RenderingContext.FLOAT,false,20,8);
         gl.vertexAttribPointer(untyped spriteShader.attribute.aColor,1,RenderingContext.FLOAT,false,20,16);         
-        gl.uniform2f(untyped spriteShader.uniform.projectionVector,projection.x,projection.y);            
         spriteBatch.Render(spriteShader,stage,camera.viewPortAABB);
     }
 

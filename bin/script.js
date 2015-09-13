@@ -861,6 +861,16 @@ glaze_geom_Vector2.prototype = {
 		this.x += v2.x * t;
 		this.y += v2.y * t;
 	}
+	,setAngle: function(angle) {
+		var len = Math.sqrt(this.x * this.x + this.y * this.y);
+		this.x = Math.cos(angle) * len;
+		this.y = Math.sin(angle) * len;
+	}
+	,distSqrd: function(v) {
+		var dX = this.x - v.x;
+		var dY = this.y - v.y;
+		return dX * dX + dY * dY;
+	}
 	,__class__: glaze_geom_Vector2
 };
 var glaze_render_display_DisplayObject = function() {
@@ -902,11 +912,12 @@ glaze_render_display_DisplayObject.prototype = {
 		return this._visible;
 	}
 	,RoundFunction: function(v) {
+		return v;
 		return Math.round(v * 10) / 10;
 	}
 	,updateTransform: function() {
-		var positionx = Math.floor(this.position.x + 0.5);
-		var positiony = Math.floor(this.position.y + 0.5);
+		var positionx = Math.floor(this.position.x);
+		var positiony = Math.floor(this.position.y);
 		var sinR = this._rotationComponents.y;
 		var cosR = this._rotationComponents.x;
 		this.localTransform[0] = cosR * this.scale.x;
@@ -1102,12 +1113,15 @@ var glaze_render_display_Camera = function() {
 glaze_render_display_Camera.__name__ = true;
 glaze_render_display_Camera.__super__ = glaze_render_display_DisplayObjectContainer;
 glaze_render_display_Camera.prototype = $extend(glaze_render_display_DisplayObjectContainer.prototype,{
-	Focus: function(x,y) {
+	rf: function(v) {
+		return Math.floor(v);
+	}
+	,Focus: function(x,y) {
 		this.realPosition.x = x;
 		this.realPosition.y = y;
 		this.cameraExtentsAABB.fitPoint(this.realPosition);
-		this.position.x = -this.realPosition.x + this.halfViewportSize.x;
-		this.position.y = -this.realPosition.y + this.halfViewportSize.y;
+		this.position.x = this.rf(-this.realPosition.x + this.halfViewportSize.x);
+		this.position.y = this.rf(-this.realPosition.y + this.halfViewportSize.y);
 	}
 	,Resize: function(width,height) {
 		this.viewportSize.x = width;
@@ -1251,6 +1265,7 @@ glaze_render_renderers_webgl_ShaderWrapper.prototype = {
 	__class__: glaze_render_renderers_webgl_ShaderWrapper
 };
 var glaze_render_renderers_webgl_SpriteRenderer = function() {
+	this.first = true;
 };
 glaze_render_renderers_webgl_SpriteRenderer.__name__ = true;
 glaze_render_renderers_webgl_SpriteRenderer.__interfaces__ = [glaze_render_renderers_webgl_IRenderer];
@@ -1272,13 +1287,16 @@ glaze_render_renderers_webgl_SpriteRenderer.prototype = {
 	}
 	,Render: function(clip) {
 		this.gl.useProgram(this.spriteShader.program);
-		this.gl.enableVertexAttribArray(this.spriteShader.attribute.aVertexPosition);
-		this.gl.enableVertexAttribArray(this.spriteShader.attribute.aTextureCoord);
-		this.gl.enableVertexAttribArray(this.spriteShader.attribute.aColor);
+		if(this.first) {
+			this.gl.uniform2f(this.spriteShader.uniform.projectionVector,this.projection.x,this.projection.y);
+			this.gl.enableVertexAttribArray(this.spriteShader.attribute.aVertexPosition);
+			this.gl.enableVertexAttribArray(this.spriteShader.attribute.aTextureCoord);
+			this.gl.enableVertexAttribArray(this.spriteShader.attribute.aColor);
+			this.first = false;
+		}
 		this.gl.vertexAttribPointer(this.spriteShader.attribute.aVertexPosition,2,5126,false,20,0);
 		this.gl.vertexAttribPointer(this.spriteShader.attribute.aTextureCoord,2,5126,false,20,8);
 		this.gl.vertexAttribPointer(this.spriteShader.attribute.aColor,1,5126,false,20,16);
-		this.gl.uniform2f(this.spriteShader.uniform.projectionVector,this.projection.x,this.projection.y);
 		this.spriteBatch.Render(this.spriteShader,this.stage,this.camera.viewPortAABB);
 	}
 	,__class__: glaze_render_renderers_webgl_SpriteRenderer
@@ -1365,6 +1383,7 @@ glaze_render_renderers_webgl_TileMap.prototype = {
 	}
 	,SetSpriteSheet: function(image) {
 		this.gl.bindTexture(3553,this.spriteSheet);
+		this.gl.pixelStorei(37441,0);
 		this.gl.texImage2D(3553,0,6408,6408,5121,image);
 		if(!this.filtered) {
 			this.gl.texParameteri(3553,10240,9728);
@@ -1392,6 +1411,7 @@ glaze_render_renderers_webgl_TileMap.prototype = {
 	}
 	,RoundFunction: function(v) {
 		return v;
+		return Math.round(v);
 		return Math.round(v * 10) / 10;
 	}
 	,Render: function(clip) {
@@ -2045,6 +2065,40 @@ glaze_tmx_TmxLayer.LayerToCoordTexture = function(layer) {
 	}
 	return textureData;
 };
+glaze_tmx_TmxLayer.LayerToCollisionData = function(layer) {
+	var tileSet = null;
+	var collisionData = new glaze_ds_Bytes2D(layer.width,layer.height,32,4);
+	var _g1 = 0;
+	var _g = layer.width;
+	while(_g1 < _g) {
+		var xp = _g1++;
+		var _g3 = 0;
+		var _g2 = layer.height;
+		while(_g3 < _g2) {
+			var yp = _g3++;
+			var source = layer.tileGIDs.get(xp,yp,0);
+			if(source > 0) {
+				if(tileSet == null) tileSet = layer.map.getGidOwner(source);
+				var relativeID = source - tileSet.firstGID;
+				var props = tileSet.getPropertiesByGid(source);
+				var tileData = 0;
+				if(props != null) {
+					var collision = props.resolve("collision");
+					if(collision != null && collision == "1") tileData = tileData | 1;
+				}
+				var y = Math.floor(relativeID / tileSet.numCols);
+				var x = relativeID - tileSet.numCols * y;
+				var v = 0 | tileData << 16 | y << 8 | x;
+				collisionData.data.b[yp * collisionData.internalWidth + xp * collisionData.bytesPerCell] = 255;
+				collisionData.data.b[yp * collisionData.internalWidth + xp * collisionData.bytesPerCell + 1] = tileData & 255;
+				collisionData.data.b[yp * collisionData.internalWidth + xp * collisionData.bytesPerCell + 2] = y & 255;
+				collisionData.data.b[yp * collisionData.internalWidth + xp * collisionData.bytesPerCell + 3] = x & 255;
+			} else collisionData.data.b[yp * collisionData.internalWidth + xp * collisionData.bytesPerCell] = 0;
+		}
+	}
+	debugger;
+	return collisionData;
+};
 glaze_tmx_TmxLayer.prototype = {
 	__class__: glaze_tmx_TmxLayer
 };
@@ -2174,10 +2228,22 @@ var glaze_tmx_TmxObject = function(source,parent) {
 		}(this));
 		this.custom.extend(node1);
 	}
+	this.combined = new haxe_ds_StringMap();
+	if(this.shared != null) this.extend(this.combined,this.shared.keys);
+	this.extend(this.combined,this.custom.keys);
 };
 glaze_tmx_TmxObject.__name__ = true;
 glaze_tmx_TmxObject.prototype = {
-	__class__: glaze_tmx_TmxObject
+	extend: function(dest,source) {
+		var $it0 = source.keys();
+		while( $it0.hasNext() ) {
+			var key = $it0.next();
+			var value;
+			value = __map_reserved[key] != null?source.getReserved(key):source.h[key];
+			if(__map_reserved[key] != null) dest.setReserved(key,value); else dest.h[key] = value;
+		}
+	}
+	,__class__: glaze_tmx_TmxObject
 };
 var glaze_tmx_TmxObjectGroup = function(source,parent) {
 	this.properties = new glaze_tmx_TmxPropertySet();
@@ -2674,6 +2740,22 @@ haxe_ds_StringMap.prototype = {
 			delete(this.h[key]);
 			return true;
 		}
+	}
+	,keys: function() {
+		var _this = this.arrayKeys();
+		return HxOverrides.iter(_this);
+	}
+	,arrayKeys: function() {
+		var out = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) out.push(key);
+		}
+		if(this.rh != null) {
+			for( var key in this.rh ) {
+			if(key.charCodeAt(0) == 36) out.push(key.substr(1));
+			}
+		}
+		return out;
 	}
 	,__class__: haxe_ds_StringMap
 };
