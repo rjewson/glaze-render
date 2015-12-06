@@ -47,14 +47,14 @@ class TextureManager
             textures.set(prop,
                 new Texture(baseTexture,
                     new Rectangle(
-                        Std.parseInt(frame.frame.x),
-                        Std.parseInt(frame.frame.y), 
-                        Std.parseInt(frame.frame.w), 
-                        Std.parseInt(frame.frame.h)
+                        frame.frame.x,
+                        frame.frame.y, 
+                        frame.frame.w, 
+                        frame.frame.h
                     ),
                     new Vector2(
-                        Std.parseFloat(frame.pivot.x),
-                        Std.parseFloat(frame.pivot.y)
+                        frame.pivot.x,
+                        frame.pivot.y
                     )
                 )
             );

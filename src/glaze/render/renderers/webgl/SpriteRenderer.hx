@@ -56,7 +56,8 @@ class SpriteRenderer implements IRenderer
         // }
         gl.vertexAttribPointer(untyped spriteShader.attribute.aVertexPosition,2,RenderingContext.FLOAT,false,20,0);
         gl.vertexAttribPointer(untyped spriteShader.attribute.aTextureCoord,2,RenderingContext.FLOAT,false,20,8);
-        gl.vertexAttribPointer(untyped spriteShader.attribute.aColor,1,RenderingContext.FLOAT,false,20,16);         
+        gl.vertexAttribPointer(untyped spriteShader.attribute.aColor,1,RenderingContext.FLOAT,false,20,16);  
+               
         spriteBatch.Render(spriteShader,stage,camera.viewPortAABB);
     }
 

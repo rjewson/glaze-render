@@ -5,4 +5,5 @@
 -main RenderDemo
 #-debug
 #-D analyzer
+--no-traces
 -cmd osascript bin/refreshTab

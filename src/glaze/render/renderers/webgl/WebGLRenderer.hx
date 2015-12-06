@@ -71,6 +71,7 @@ class WebGLRenderer
         view.width = width;
         view.height = height;
         gl.viewport(0,0,width,height);
+        gl.scissor(0,0,width,height);
     }
 
     public function AddRenderer(renderer:IRenderer) {
@@ -84,11 +85,14 @@ class WebGLRenderer
             return;
         stage.updateTransform();
         stage.PreRender();
-        //gl.viewport(0,0,width,height);
+
+        // gl.viewport(0,0,width,height);
         // gl.colorMask(true,true,true,contextAttributes.alpha);
         // gl.bindFramebuffer(RenderingContext.FRAMEBUFFER,null);
+        gl.clearColor(0,0,0,0);
         //gl.clear(RenderingContext.COLOR_BUFFER_BIT);
         //gl.blendFunc(RenderingContext.ONE,RenderingContext.ONE_MINUS_SRC_ALPHA);
+        //return;
         for (renderer in renderers)
             renderer.Render(clip);
     }

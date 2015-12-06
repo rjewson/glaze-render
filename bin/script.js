@@ -849,6 +849,11 @@ glaze_geom_Vector2.prototype = {
 	,rightHandNormal: function() {
 		return new glaze_geom_Vector2(-this.y,this.x);
 	}
+	,rightHandNormalEquals: function() {
+		var t = this.x;
+		this.x = -this.y;
+		this.y = t;
+	}
 	,reflectEquals: function(normal) {
 		var d = this.x * normal.x + this.y * normal.y;
 		this.x -= 2 * d * normal.x;
@@ -1019,7 +1024,6 @@ glaze_render_display_DisplayObjectContainer.prototype = $extend(glaze_render_dis
 	}
 	,removeChildAt: function(index) {
 		var child = this.findChildByIndex(index);
-		console.log(child);
 		this.removeChild(child);
 		this.debug();
 		return child;
@@ -1094,10 +1098,7 @@ glaze_render_display_DisplayObjectContainer.prototype = $extend(glaze_render_dis
 	}
 	,debug: function() {
 		var child = this.head;
-		while(child != null) {
-			console.log(child.id);
-			child = child.next;
-		}
+		while(child != null) child = child.next;
 	}
 	,__class__: glaze_render_display_DisplayObjectContainer
 });
@@ -1287,13 +1288,10 @@ glaze_render_renderers_webgl_SpriteRenderer.prototype = {
 	}
 	,Render: function(clip) {
 		this.gl.useProgram(this.spriteShader.program);
-		if(this.first) {
-			this.gl.uniform2f(this.spriteShader.uniform.projectionVector,this.projection.x,this.projection.y);
-			this.gl.enableVertexAttribArray(this.spriteShader.attribute.aVertexPosition);
-			this.gl.enableVertexAttribArray(this.spriteShader.attribute.aTextureCoord);
-			this.gl.enableVertexAttribArray(this.spriteShader.attribute.aColor);
-			this.first = false;
-		}
+		this.gl.uniform2f(this.spriteShader.uniform.projectionVector,this.projection.x,this.projection.y);
+		this.gl.enableVertexAttribArray(this.spriteShader.attribute.aVertexPosition);
+		this.gl.enableVertexAttribArray(this.spriteShader.attribute.aTextureCoord);
+		this.gl.enableVertexAttribArray(this.spriteShader.attribute.aColor);
 		this.gl.vertexAttribPointer(this.spriteShader.attribute.aVertexPosition,2,5126,false,20,0);
 		this.gl.vertexAttribPointer(this.spriteShader.attribute.aTextureCoord,2,5126,false,20,8);
 		this.gl.vertexAttribPointer(this.spriteShader.attribute.aColor,1,5126,false,20,16);
@@ -1415,6 +1413,7 @@ glaze_render_renderers_webgl_TileMap.prototype = {
 		return Math.round(v * 10) / 10;
 	}
 	,Render: function(clip) {
+		return;
 		var x = -this.camera.position.x / (this.tileScale * 2);
 		var y = -this.camera.position.y / (this.tileScale * 2);
 		this.gl.enable(3042);
@@ -1485,7 +1484,7 @@ glaze_render_renderers_webgl_WebGLBatch.prototype = {
 	}
 	,Flush: function(shader,texture,size) {
 		this.gl.bindBuffer(34962,this.dataBuffer);
-		this.gl.bufferData(34962,this.data,35044);
+		this.gl.bufferSubData(34962,0,this.data);
 		this.gl.vertexAttribPointer(shader.attribute.aVertexPosition,2,5126,false,20,0);
 		this.gl.vertexAttribPointer(shader.attribute.aTextureCoord,2,5126,false,20,8);
 		this.gl.vertexAttribPointer(shader.attribute.aColor,1,5126,false,20,16);
@@ -1521,7 +1520,6 @@ glaze_render_renderers_webgl_WebGLBatch.prototype = {
 		this.data[index + 19] = sprite.worldAlpha;
 	}
 	,Render: function(shader,stage,clip) {
-		this.gl.useProgram(shader.program);
 		var node;
 		var stack;
 		var top;
@@ -1624,7 +1622,7 @@ glaze_render_renderers_webgl_WebGLRenderer.prototype = {
 		this.gl.enable(3042);
 		this.gl.colorMask(true,true,true,this.contextAttributes.alpha);
 		this.gl.clearColor(0,0,0,1);
-		if(!this.gl.getExtension("OES_texture_float")) console.log("New browser time: Float textures not supported");
+		if(!this.gl.getExtension("OES_texture_float")) null;
 	}
 	,Resize: function(width,height) {
 		this.width = width;
@@ -1632,6 +1630,7 @@ glaze_render_renderers_webgl_WebGLRenderer.prototype = {
 		this.view.width = width;
 		this.view.height = height;
 		this.gl.viewport(0,0,width,height);
+		this.gl.scissor(0,0,width,height);
 	}
 	,AddRenderer: function(renderer) {
 		renderer.Init(this.gl,this.camera);
@@ -1642,6 +1641,7 @@ glaze_render_renderers_webgl_WebGLRenderer.prototype = {
 		if(this.contextLost) return;
 		this.stage.updateTransform();
 		this.stage.PreRender();
+		this.gl.clearColor(0,0,0,0);
 		var _g = 0;
 		var _g1 = this.renderers;
 		while(_g < _g1.length) {
@@ -1652,11 +1652,11 @@ glaze_render_renderers_webgl_WebGLRenderer.prototype = {
 	}
 	,onContextLost: function(event) {
 		this.contextLost = true;
-		console.log("webGL Context Lost");
+		null;
 	}
 	,onContextRestored: function(event) {
 		this.contextLost = false;
-		console.log("webGL Context Restored");
+		null;
 	}
 	,__class__: glaze_render_renderers_webgl_WebGLRenderer
 };
@@ -1688,9 +1688,7 @@ glaze_render_renderers_webgl_WebGLShaders.CompileProgram = function(gl,vertexSrc
 	gl.linkProgram(shaderProgram);
 	if(!gl.getProgramParameter(shaderProgram,35714)) {
 		js_Browser.alert("Could not initialize program");
-		console.log(vertexSrc);
-		console.log(fragmentSrc);
-		console.log(gl.getProgramInfoLog(shaderProgram));
+		null;
 	}
 	return shaderProgram;
 };
@@ -1741,7 +1739,7 @@ glaze_render_texture_BaseTexture.prototype = {
 			this.renderbuffer.width = this.width;
 			this.renderbuffer.height = this.height;
 			this.gl.renderbufferStorage(36161,33189,this.width,this.height);
-			console.log("resize");
+			null;
 		}
 		this.gl.framebufferTexture2D(36160,36064,3553,this.texture,0);
 		this.gl.framebufferRenderbuffer(36160,36096,36161,this.renderbuffer);
@@ -1799,6 +1797,7 @@ glaze_render_texture_TextureManager.prototype = {
 	}
 	,ParseTexturePackerJSON: function(textureConfig,id) {
 		if(!(typeof(textureConfig) == "string")) return;
+		debugger;
 		var baseTexture = this.baseTextures.get(id);
 		var textureData = JSON.parse(textureConfig);
 		var fields = Reflect.fields(textureData.frames);
@@ -1807,7 +1806,7 @@ glaze_render_texture_TextureManager.prototype = {
 			var prop = fields[_g];
 			++_g;
 			var frame = Reflect.field(textureData.frames,prop);
-			this.textures.set(prop,new glaze_render_texture_Texture(baseTexture,new glaze_geom_Rectangle(Std.parseInt(frame.frame.x),Std.parseInt(frame.frame.y),Std.parseInt(frame.frame.w),Std.parseInt(frame.frame.h)),new glaze_geom_Vector2(parseFloat(frame.pivot.x),parseFloat(frame.pivot.y))));
+			this.textures.set(prop,new glaze_render_texture_Texture(baseTexture,new glaze_geom_Rectangle(frame.frame.x,frame.frame.y,frame.frame.w,frame.frame.h),new glaze_geom_Vector2(frame.pivot.x,frame.pivot.y)));
 		}
 	}
 	,ParseTexturesFromTiles: function(tileSize,id) {
@@ -2096,7 +2095,6 @@ glaze_tmx_TmxLayer.LayerToCollisionData = function(layer) {
 			} else collisionData.data.b[yp * collisionData.internalWidth + xp * collisionData.bytesPerCell] = 0;
 		}
 	}
-	debugger;
 	return collisionData;
 };
 glaze_tmx_TmxLayer.prototype = {

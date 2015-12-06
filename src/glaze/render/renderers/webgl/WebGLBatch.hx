@@ -68,7 +68,8 @@ class WebGLBatch
 
     public function Flush(shader:ShaderWrapper,texture:Texture,size:Int) {
         gl.bindBuffer(RenderingContext.ARRAY_BUFFER,dataBuffer);
-        gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.STATIC_DRAW);
+        // gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.STATIC_DRAW);
+        gl.bufferSubData(RenderingContext.ARRAY_BUFFER,0,data);
         gl.vertexAttribPointer(untyped shader.attribute.aVertexPosition,2,RenderingContext.FLOAT,false,20,0);
         gl.vertexAttribPointer(untyped shader.attribute.aTextureCoord,2,RenderingContext.FLOAT,false,20,8);
         gl.vertexAttribPointer(untyped shader.attribute.aColor,1,RenderingContext.FLOAT,false,20,16);        
@@ -129,7 +130,7 @@ class WebGLBatch
 
     public function Render(shader:ShaderWrapper,stage:Stage,clip:AABB2) {
 
-        gl.useProgram(shader.program);
+        // gl.useProgram(shader.program);
 
         var node:DisplayObjectContainer;
         var stack:Array<DisplayObjectContainer>;
