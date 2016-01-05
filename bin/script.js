@@ -461,6 +461,9 @@ glaze_geom_AABB.prototype = {
 		var _b = Math.min(this.position.y + this.extents.y,aabb.position.y + aabb.extents.y);
 		return (_r - _l) * (_b - _t);
 	}
+	,area: function() {
+		return this.extents.x * this.extents.y * 4;
+	}
 	,clone: function(aabb) {
 		var aabb1 = new glaze_geom_AABB();
 		aabb1.position.copy(this.position);
@@ -1413,7 +1416,6 @@ glaze_render_renderers_webgl_TileMap.prototype = {
 		return Math.round(v * 10) / 10;
 	}
 	,Render: function(clip) {
-		return;
 		var x = -this.camera.position.x / (this.tileScale * 2);
 		var y = -this.camera.position.y / (this.tileScale * 2);
 		this.gl.enable(3042);
@@ -1797,7 +1799,6 @@ glaze_render_texture_TextureManager.prototype = {
 	}
 	,ParseTexturePackerJSON: function(textureConfig,id) {
 		if(!(typeof(textureConfig) == "string")) return;
-		debugger;
 		var baseTexture = this.baseTextures.get(id);
 		var textureData = JSON.parse(textureConfig);
 		var fields = Reflect.fields(textureData.frames);
