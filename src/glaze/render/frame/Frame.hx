@@ -11,15 +11,18 @@ class Frame {
 	public var scale:Vector2;
 	// public var 
 
-	public function new(name:String,texture:Texture) {
+	public function new(name:String,texture:Texture,scale:Vector2) {
 		this.name = name;
 		this.texture = texture;
+		this.scale = scale;
 	}
 
 	public function updateSprite(sprite:Sprite) {
 		sprite.texture = texture;
 		sprite.pivot.x = sprite.texture.frame.width * sprite.texture.pivot.x;
         sprite.pivot.y = (sprite.texture.frame.height + 2) * sprite.texture.pivot.y;
+        sprite.scale.x = scale.x;
+        sprite.scale.y = scale.y;
 	}
 
 }

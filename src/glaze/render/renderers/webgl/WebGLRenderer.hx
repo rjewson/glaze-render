@@ -89,10 +89,16 @@ class WebGLRenderer
         // gl.viewport(0,0,width,height);
         // gl.colorMask(true,true,true,contextAttributes.alpha);
         // gl.bindFramebuffer(RenderingContext.FRAMEBUFFER,null);
-        gl.clearColor(0,0,0,0);
-        //gl.clear(RenderingContext.COLOR_BUFFER_BIT);
+        // gl.clearColor(0.2,0.2,0.2,1.0);
+        // gl.clear(RenderingContext.COLOR_BUFFER_BIT);
+
+// gl.colorMask(true, true, true, true);
+// gl.clearColor(1.0, 0.0, 0.0, 1.0);
+// gl.clear(RenderingContext.COLOR_BUFFER_BIT);
+// gl.colorMask(true, true, true, false);
+
         //gl.blendFunc(RenderingContext.ONE,RenderingContext.ONE_MINUS_SRC_ALPHA);
-        //return;
+        // return;
         for (renderer in renderers)
             renderer.Render(clip);
     }

@@ -146,7 +146,7 @@ class TileMap implements IRenderer
 
     public function Render(clip:AABB2) {
         // return;
-        var x = (if (true==true) -camera.position.x else 0) / (tileScale*2);
+        var x = -camera.position.x / (tileScale*2); //The *2 modifies the camera movemment
         var y = -camera.position.y / (tileScale*2);
         //x += tileSize/2;
         //y += tileSize/2;

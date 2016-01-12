@@ -1643,7 +1643,6 @@ glaze_render_renderers_webgl_WebGLRenderer.prototype = {
 		if(this.contextLost) return;
 		this.stage.updateTransform();
 		this.stage.PreRender();
-		this.gl.clearColor(0,0,0,0);
 		var _g = 0;
 		var _g1 = this.renderers;
 		while(_g < _g1.length) {
