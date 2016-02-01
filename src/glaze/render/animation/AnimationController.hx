@@ -1,6 +1,7 @@
 package glaze.render.animation;
 
 import glaze.render.animation.Animation;
+import glaze.render.display.Sprite;
 import glaze.render.frame.Frame;
 import glaze.render.frame.FrameList;
 
@@ -437,4 +438,19 @@ class AnimationController
 	public function getFrame():Frame {
 		return _frames.frames[frameIndex];
 	}
+
+	public function updateSprite(sprite:Sprite) {
+		var frame = getFrame();
+
+		sprite.texture = frame.texture;
+		sprite.pivot.x = sprite.texture.frame.width * sprite.texture.pivot.x;
+        sprite.pivot.y = (sprite.texture.frame.height + 2) * sprite.texture.pivot.y;
+        sprite.scale.x = frame.scale.x;// * _curAnim.flipX ? -1:1;
+        if (curAnim.flipX)
+        	sprite.scale.x *= -1;
+        sprite.scale.y = frame.scale.y;//* _curAnim.flipY ? -1:1;
+        if (curAnim.flipY)
+        	sprite.scale.y *= -1; 
+	}
+
 }

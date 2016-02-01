@@ -17,12 +17,12 @@ class Frame {
 		this.scale = scale;
 	}
 
-	public function updateSprite(sprite:Sprite) {
+	public function updateSprite(sprite:Sprite,flipX:Float=1,flipY:Float=1) {
 		sprite.texture = texture;
 		sprite.pivot.x = sprite.texture.frame.width * sprite.texture.pivot.x;
         sprite.pivot.y = (sprite.texture.frame.height + 2) * sprite.texture.pivot.y;
-        sprite.scale.x = scale.x;
-        sprite.scale.y = scale.y;
+        sprite.scale.x = scale.x * flipX;
+        sprite.scale.y = scale.y * flipY;
 	}
 
 }

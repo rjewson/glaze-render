@@ -73,7 +73,6 @@ class WebGLRenderer
         gl.viewport(0,0,width,height);
         gl.scissor(0,0,width,height);
     }
-
     public function AddRenderer(renderer:IRenderer) {
         renderer.Init(gl,camera);
         renderer.Resize(width,height);
@@ -92,10 +91,13 @@ class WebGLRenderer
         // gl.clearColor(0.2,0.2,0.2,1.0);
         // gl.clear(RenderingContext.COLOR_BUFFER_BIT);
 
-// gl.colorMask(true, true, true, true);
+gl.colorMask(true, true, true, true);
 // gl.clearColor(1.0, 0.0, 0.0, 1.0);
-// gl.clear(RenderingContext.COLOR_BUFFER_BIT);
-// gl.colorMask(true, true, true, false);
+gl.clearColor(159/255, 188/255, 197/255, 1.0);
+gl.clear(RenderingContext.COLOR_BUFFER_BIT);
+gl.colorMask(true, true, true, false);
+//9FBCC5
+//159 188 197 1
 
         //gl.blendFunc(RenderingContext.ONE,RenderingContext.ONE_MINUS_SRC_ALPHA);
         // return;

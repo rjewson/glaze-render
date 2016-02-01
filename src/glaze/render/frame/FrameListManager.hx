@@ -15,6 +15,8 @@ typedef JSONAnimation = {
     var frames:Array<Int>;
     var fps:Int;
     var looped:Bool;
+    var flipX:Bool;
+    var flipY:Bool;
 }
 
 typedef JSONFrameList = {
@@ -49,7 +51,7 @@ class FrameListManager {
             frameLists.set(prop,frameList);
 
             var framelistItem:JSONFrameList = Reflect.field(frameListConfigData, prop);
-            trace(framelistItem.frames);
+            //trace(framelistItem.frames);
             if (framelistItem.frames!=null) {
                 for (frame in framelistItem.frames) {
                     frameList.addFrame(new Frame(frame.id,textureManager.textures.get(frame.name),frame.scale ));
@@ -60,12 +62,17 @@ class FrameListManager {
 
                     for (animationProp in animations) {
                         var animation:JSONAnimation = Reflect.field(framelistItem.animations, animationProp);
+                        // animation.flipX = animation.flipX!=null
                         // trace(animation);
-                        frameList.addAnimation(new Animation(null,animationProp,animation.frames,animation.fps,animation.looped));
+                        if (animationProp=="walkleft")
+                            js.Lib.debug();
+                        frameList.addAnimation(new Animation(null,animationProp,animation.frames,animation.fps,animation.looped,animation.flipX,animation.flipY));
                     }
                 }
             }
         }
+        // js.Lib.debug();
+
     }
 
 }

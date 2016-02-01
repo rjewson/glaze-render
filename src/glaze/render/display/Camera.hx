@@ -13,6 +13,7 @@ class Camera extends DisplayObjectContainer
     public var viewPortAABB:AABB2;
     public var worldExtentsAABB:AABB2;
     private var cameraExtentsAABB:AABB2;
+    public var shake:Vector2;
 
     public function new() {
         super();
@@ -20,6 +21,7 @@ class Camera extends DisplayObjectContainer
         realPosition = new Vector2();
         viewportSize = new Vector2();
         halfViewportSize = new Vector2();
+        shake = new Vector2();
         viewPortAABB = new AABB2();
         worldExtentsAABB = new AABB2();
     }
@@ -32,10 +34,14 @@ class Camera extends DisplayObjectContainer
         //Need to move the camera container the oposite way to the actual coords
         realPosition.x = x;
         realPosition.y = y;
+        // realPosition.plusEquals(shake);
         //Clamp position inside shrunk camera extents
         cameraExtentsAABB.fitPoint(realPosition);
         position.x = rf(-realPosition.x+halfViewportSize.x);
         position.y = rf(-realPosition.y+halfViewportSize.y);
+
+        position.plusEquals(shake);
+        shake.setTo(0,0);
     }
 
     public function Resize(width:Int,height:Int) {

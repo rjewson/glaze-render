@@ -807,6 +807,9 @@ glaze_geom_Vector2.prototype = {
 	,length: function() {
 		return Math.sqrt(this.x * this.x + this.y * this.y);
 	}
+	,lengthSqrd: function() {
+		return this.x * this.x + this.y * this.y;
+	}
 	,clampScalar: function(max) {
 		var l = Math.sqrt(this.x * this.x + this.y * this.y);
 		if(l > max) this.multEquals(max / l);
@@ -873,6 +876,12 @@ glaze_geom_Vector2.prototype = {
 		var len = Math.sqrt(this.x * this.x + this.y * this.y);
 		this.x = Math.cos(angle) * len;
 		this.y = Math.sin(angle) * len;
+	}
+	,rotateEquals: function(angle) {
+		var cos = Math.cos(angle);
+		var sin = Math.sin(angle);
+		this.x = cos * this.x - sin * this.y;
+		this.y = cos * this.y + sin * this.x;
 	}
 	,distSqrd: function(v) {
 		var dX = this.x - v.x;
@@ -1111,6 +1120,7 @@ var glaze_render_display_Camera = function() {
 	this.realPosition = new glaze_geom_Vector2();
 	this.viewportSize = new glaze_geom_Vector2();
 	this.halfViewportSize = new glaze_geom_Vector2();
+	this.shake = new glaze_geom_Vector2();
 	this.viewPortAABB = new glaze_geom_AABB2();
 	this.worldExtentsAABB = new glaze_geom_AABB2();
 };
@@ -1126,6 +1136,8 @@ glaze_render_display_Camera.prototype = $extend(glaze_render_display_DisplayObje
 		this.cameraExtentsAABB.fitPoint(this.realPosition);
 		this.position.x = this.rf(-this.realPosition.x + this.halfViewportSize.x);
 		this.position.y = this.rf(-this.realPosition.y + this.halfViewportSize.y);
+		this.position.plusEquals(this.shake);
+		this.shake.setTo(0,0);
 	}
 	,Resize: function(width,height) {
 		this.viewportSize.x = width;
@@ -1643,6 +1655,10 @@ glaze_render_renderers_webgl_WebGLRenderer.prototype = {
 		if(this.contextLost) return;
 		this.stage.updateTransform();
 		this.stage.PreRender();
+		this.gl.colorMask(true,true,true,true);
+		this.gl.clearColor(0.623529411764705888,0.737254901960784359,0.772549019607843168,1.0);
+		this.gl.clear(16384);
+		this.gl.colorMask(true,true,true,false);
 		var _g = 0;
 		var _g1 = this.renderers;
 		while(_g < _g1.length) {
@@ -4173,7 +4189,7 @@ glaze_geom_Vector2.ZERO_TOLERANCE = 1e-08;
 glaze_render_renderers_webgl_SpriteRenderer.SPRITE_VERTEX_SHADER = ["precision mediump float;","attribute vec2 aVertexPosition;","attribute vec2 aTextureCoord;","attribute float aColor;","uniform vec2 projectionVector;","varying vec2 vTextureCoord;","varying float vColor;","void main(void) {","gl_Position = vec4( aVertexPosition.x / projectionVector.x -1.0, aVertexPosition.y / -projectionVector.y + 1.0 , 0.0, 1.0);","vTextureCoord = aTextureCoord;","vColor = aColor;","}"];
 glaze_render_renderers_webgl_SpriteRenderer.SPRITE_FRAGMENT_SHADER = ["precision mediump float;","varying vec2 vTextureCoord;","varying float vColor;","uniform sampler2D uSampler;","void main(void) {","gl_FragColor = texture2D(uSampler,vTextureCoord) * vColor;","}"];
 glaze_render_renderers_webgl_TileMap.TILEMAP_VERTEX_SHADER = ["precision mediump float;","attribute vec2 position;","attribute vec2 texture;","varying vec2 pixelCoord;","varying vec2 texCoord;","uniform vec2 viewOffset;","uniform vec2 viewportSize;","uniform vec2 inverseTileTextureSize;","uniform float inverseTileSize;","void main(void) {","   pixelCoord = (texture * viewportSize) + viewOffset;","   texCoord = pixelCoord * inverseTileTextureSize * inverseTileSize;","   gl_Position = vec4(position, 0.0, 1.0);","}"];
-glaze_render_renderers_webgl_TileMap.TILEMAP_FRAGMENT_SHADER = ["precision mediump float;","varying vec2 pixelCoord;","varying vec2 texCoord;","uniform sampler2D tiles;","uniform sampler2D sprites;","uniform vec2 inverseTileTextureSize;","uniform vec2 inverseSpriteTextureSize;","uniform float tileSize;","void main(void) {","   vec4 tile = texture2D(tiles, texCoord);","   if(tile.x == 1.0 && tile.y == 1.0) { discard; }","   vec2 spriteOffset = floor(tile.xy * 256.0) * tileSize;","   vec2 spriteCoord = mod(pixelCoord, tileSize);","   gl_FragColor = texture2D(sprites, (spriteOffset + spriteCoord) * inverseSpriteTextureSize);","}"];
+glaze_render_renderers_webgl_TileMap.TILEMAP_FRAGMENT_SHADER = ["precision mediump float;","varying vec2 pixelCoord;","varying vec2 texCoord;","uniform sampler2D tiles;","uniform sampler2D sprites;","uniform vec2 inverseTileTextureSize;","uniform vec2 inverseSpriteTextureSize;","uniform float tileSize;","void main(void) {","   vec4 tile = texture2D(tiles, texCoord);","   if(tile.x == 1.0 && tile.y == 1.0) { discard; }","   vec2 spriteOffset = floor(tile.xy * 256.0) * tileSize;","   vec2 spriteCoord = mod(pixelCoord, tileSize);","   spriteCoord = vec2(16.0,0.0) - spriteCoord;","   gl_FragColor = texture2D(sprites, (spriteOffset + spriteCoord) * inverseSpriteTextureSize);","}"];
 glaze_tmx_TmxLayer.BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 haxe_crypto_Base64.CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 haxe_crypto_Base64.BYTES = haxe_io_Bytes.ofString(haxe_crypto_Base64.CHARS);
