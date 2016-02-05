@@ -55,7 +55,7 @@ class RenderDemo
 
         loadAssets([MAP_DATA,TEXTURE_CONFIG,TEXTURE_DATA,TILE_SPRITE_SHEET,TILE_MAP_DATA_1,TILE_MAP_DATA_2]);
     }    
-
+ 
     public function loadAssets(assetList:Array<String>) {
         assets = new AssetLoader();
         assets.loaded.add(setup);
