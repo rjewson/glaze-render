@@ -10,6 +10,22 @@ import glaze.geom.Rectangle;
 import glaze.render.texture.BaseTexture;
 import glaze.render.texture.Texture;
 
+typedef TexturePackerFrame = {
+    var x:Int;
+    var y:Int;
+    var w:Int;
+    var h:Int;
+}
+
+typedef TexturePackerItem = {
+    var frame:TexturePackerFrame;
+    var rotated:Bool;
+    var trimmed:Bool;
+    var spriteSourceSize:TexturePackerFrame;
+    var sourceSize:Dynamic; //{"w":15,"h":11}
+    var pivot:Dynamic;      //{"x":0.5,"y":0.5}
+}
+
 class TextureManager
 {
 

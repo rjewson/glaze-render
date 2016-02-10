@@ -79,17 +79,38 @@ class PointSpriteRenderer implements IRenderer
         indexRun=0;
     }
 
-    public function AddSpriteToBatch(spriteID:Int,x:Float,y:Float,size:Float,alpha:Int,red:Int,green:Int,blue:Int) {
-        var index = indexRun * 5;
+    // public function AddSpriteToBatch(spriteID:Int,x:Float,y:Float,size:Float,alpha:Int,red:Int,green:Int,blue:Int) {
+    //     var index = indexRun * 5;
+    //     data[index+0] = Std.int(x + camera.position.x);
+    //     data[index+1] = Std.int(y + camera.position.y);
+    //     data[index+2] = size;
+    //     data[index+3] = spriteID;
+    //     index *= 4;
+    //     data8[index+16] = red;
+    //     data8[index+17] = blue;
+    //     data8[index+18] = green;
+    //     data8[index+19] = alpha;
+    //     indexRun++;
+    // }    
+
+    public function AddSpriteToBatch(spriteX:Float,spriteY:Float,width:Float,height:Float,x:Float,y:Float,size:Float,alpha:Int,flipX:Int,flipY:Int,nop:Int) {
+        var index = indexRun * 9;
         data[index+0] = Std.int(x + camera.position.x);
         data[index+1] = Std.int(y + camera.position.y);
         data[index+2] = size;
-        data[index+3] = spriteID;
-        index *= 4;
-        data8[index+16] = red;
-        data8[index+17] = blue;
-        data8[index+18] = green;
-        data8[index+19] = alpha;
+        data[index+3] = spriteX;
+        data[index+4] = spriteY;
+        data[index+5] = width;
+        data[index+6] = height;
+
+        data[index+7] = flipX;
+        data[index+8] = flipY;
+        // trace(flipX,flipY);
+        // index *= 7;
+        // data8[index+28] = 1;
+        // data8[index+29] = 1;
+        // data8[index+30] = 1;
+        // data8[index+31] = 1;
         indexRun++;
     }
 
@@ -105,20 +126,19 @@ class PointSpriteRenderer implements IRenderer
 
         gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.position);
         gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.size);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tileType);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tilePosition);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tileDimension);
         gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.colour);
 
-        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.position, 2, RenderingContext.FLOAT, false, 20, 0);
-        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.size, 1, RenderingContext.FLOAT, false, 20, 8);
-        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.tileType, 1, RenderingContext.FLOAT, false, 20, 12);
-        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.colour, 4, RenderingContext.UNSIGNED_BYTE, true, 20, 16);
+        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.position, 2, RenderingContext.FLOAT, false, 36, 0);
+        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.size, 1, RenderingContext.FLOAT, false, 36, 8);
+        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.tilePosition, 2, RenderingContext.FLOAT, false, 36, 12);
+        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.tileDimension, 2, RenderingContext.FLOAT, false, 36, 20);
+        // gl.vertexAttribPointer(untyped pointSpriteShader.attribute.colour, 4, RenderingContext.UNSIGNED_BYTE, false, 36, 28);
+        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.colour, 2, RenderingContext.FLOAT, false, 36, 28);
 
-        gl.uniform1f(untyped pointSpriteShader.uniform.texTilesWide, texTilesWide);
-        gl.uniform1f(untyped pointSpriteShader.uniform.texTilesHigh, texTilesHigh);
-        gl.uniform1f(untyped pointSpriteShader.uniform.invTexTilesWide, invTexTilesWide);
-        gl.uniform1f(untyped pointSpriteShader.uniform.invTexTilesHigh, invTexTilesHigh);
         gl.uniform2f(untyped pointSpriteShader.uniform.projectionVector,projection.x,projection.y);            
-        gl.uniform2f(untyped pointSpriteShader.uniform.flip,0,0);            
+        // gl.uniform2f(untyped pointSpriteShader.uniform.flip,1,1);            
 
         gl.activeTexture(RenderingContext.TEXTURE0);
         gl.bindTexture(RenderingContext.TEXTURE_2D,texture);
@@ -127,22 +147,20 @@ class PointSpriteRenderer implements IRenderer
 
     public static var SPRITE_VERTEX_SHADER:Array<String> = [
         "precision mediump float;",
-        "uniform float texTilesWide;",
-        "uniform float texTilesHigh;",
-        "uniform float invTexTilesWide;",
-        "uniform float invTexTilesHigh;",
         "uniform vec2 projectionVector;",
-        "uniform vec2 flip;",
+        // "uniform vec2 flip;",
 
         "attribute vec2 position;",
         "attribute float size;",
-        "attribute float tileType;",
-        "attribute vec4 colour;",
+        "attribute vec2 tilePosition;",
+        "attribute vec2 tileDimension;",
+        "attribute vec2 colour;",
         "varying vec2 vTilePos;",
-        "varying vec4 vColor;",
+        "varying vec2 tileDim;",
+        "varying vec2 vColor;",
         "void main() {",
-            "float t = floor(tileType/texTilesWide);",
-            "vTilePos = vec2(tileType-(t*texTilesWide), t);",
+            "vTilePos = tilePosition;",
+            "tileDim = tileDimension;",
             "gl_PointSize = size;",
             "vColor = colour;",
             "gl_Position = vec4( position.x / projectionVector.x -1.0, position.y / -projectionVector.y + 1.0 , 0.0, 1.0);",            
@@ -171,16 +189,17 @@ fy = 1
     public static var SPRITE_FRAGMENT_SHADER:Array<String> = [
         "precision mediump float;",
         "uniform sampler2D texture;",
-        "uniform float invTexTilesWide;",
-        "uniform float invTexTilesHigh;",
-        "uniform vec2 flip;",
-
+        // "uniform vec2 flip;",
         "varying vec2 vTilePos;",
-        "varying vec4 vColor;",
+        "varying vec2 tileDim;",
+        "varying vec2 vColor;",
         "void main() {",
+            "vec2 uv = vec2( ((-1.0+(2.0*vColor.x))*(vColor.x-gl_PointCoord.x)*tileDim.x) + vTilePos.x, ((-1.0+(2.0*vColor.y))*(vColor.y-gl_PointCoord.y)*tileDim.y) + vTilePos.y);",
+            //"vec2 uv = vec2( gl_PointCoord.x*tileDim.x + vTilePos.x, gl_PointCoord.y*tileDim.y + vTilePos.y);", //Works no rotation
+            // "vec2 uv = vec2( gl_PointCoord.x*invTexTilesWide + invTexTilesWide*vTilePos.x, gl_PointCoord.y*invTexTilesHigh + invTexTilesHigh*vTilePos.y);",
             //"vec2 uv = vec2( (-1.0*(0.0-gl_PointCoord.x))*invTexTilesWide + invTexTilesWide*vTilePos.x, (gl_PointCoord.y)*invTexTilesHigh + invTexTilesHigh*vTilePos.y);",
-            "vec2 uv = vec2( ((-1.0+(2.0*flip.x))*(flip.x-gl_PointCoord.x))*invTexTilesWide + invTexTilesWide*vTilePos.x, ((-1.0+(2.0*flip.y))*(flip.y-gl_PointCoord.y))*invTexTilesHigh + invTexTilesHigh*vTilePos.y);",
-            "gl_FragColor = texture2D( texture, uv ) * vColor;",
+            // "vec2 uv = vec2( ((-1.0+(2.0*flip.x))*(flip.x-gl_PointCoord.x))*invTexTilesWide + invTexTilesWide*vTilePos.x, ((-1.0+(2.0*flip.y))*(flip.y-gl_PointCoord.y))*invTexTilesHigh + invTexTilesHigh*vTilePos.y);",
+            "gl_FragColor = texture2D( texture, uv );",
         "}"
     ];
 
