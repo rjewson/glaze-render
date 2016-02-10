@@ -34,22 +34,24 @@ class PointSpriteLightMapRenderer implements IRenderer
     public var indexRun:Int;
 
     public var first:Bool = true;
+    public var maxSprites:Int;
 
-    public function new() {
+    public function new(size:Int) {
+        maxSprites = size;
     }
 
     public function Init(gl:RenderingContext,camera:Camera) {
+        js.Lib.debug();
         this.gl = gl;
         this.camera = camera;
         projection = new Vector2();
         pointSpriteShader = new ShaderWrapper(gl, WebGLShaders.CompileProgram(gl,SPRITE_VERTEX_SHADER,SPRITE_FRAGMENT_SHADER));
         dataBuffer =  gl.createBuffer();
-    }
-
-    public function ResizeBatch(size:Int) {
-        arrayBuffer = new ArrayBuffer(20*4*size);
+        arrayBuffer = new ArrayBuffer(20*4*maxSprites);
         data = new Float32Array(arrayBuffer);
         data8 = new Uint8ClampedArray(arrayBuffer);
+        gl.bindBuffer(RenderingContext.ARRAY_BUFFER,dataBuffer);
+        gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.DYNAMIC_DRAW);
         ResetBatch();
     }
 
@@ -92,7 +94,8 @@ class PointSpriteLightMapRenderer implements IRenderer
 
         gl.useProgram(pointSpriteShader.program);
         gl.bindBuffer(RenderingContext.ARRAY_BUFFER,dataBuffer);
-        gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.DYNAMIC_DRAW);    
+        // gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.DYNAMIC_DRAW);    
+        gl.bufferSubData(RenderingContext.ARRAY_BUFFER,0,data);
 
         if (first) {
             gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.position);

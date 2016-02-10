@@ -38,8 +38,10 @@ class PointSpriteRenderer implements IRenderer
     public var invTexTilesHigh:Float;
 
     public var indexRun:Int;
+    public var maxSprites:Int;
 
-    public function new() {
+    public function new(size:Int) {
+        maxSprites = size;
     }
 
     public function Init(gl:RenderingContext,camera:Camera) {
@@ -48,13 +50,19 @@ class PointSpriteRenderer implements IRenderer
         projection = new Vector2();
         pointSpriteShader = new ShaderWrapper(gl, WebGLShaders.CompileProgram(gl,SPRITE_VERTEX_SHADER,SPRITE_FRAGMENT_SHADER));
         dataBuffer =  gl.createBuffer();
-    }
-
-    public function ResizeBatch(size:Int) {
-        arrayBuffer = new ArrayBuffer(20*4*size);
+        arrayBuffer = new ArrayBuffer(20*4*maxSprites);
         data = new Float32Array(arrayBuffer);
         data8 = new Uint8ClampedArray(arrayBuffer);
+        gl.bindBuffer(RenderingContext.ARRAY_BUFFER,dataBuffer);
+        gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.DYNAMIC_DRAW);
         ResetBatch();
+
+        gl.useProgram(pointSpriteShader.program);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.position);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.size);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tilePosition);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tileDimension);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.colour);
     }
 
     public function SetSpriteSheet(texture:Texture,spriteSize:Int,spritesWide:Int,spritesHigh:Int) {
@@ -121,14 +129,17 @@ class PointSpriteRenderer implements IRenderer
         gl.blendFunc(RenderingContext.SRC_ALPHA, RenderingContext.ONE_MINUS_SRC_ALPHA);
 
         gl.useProgram(pointSpriteShader.program);
-        gl.bindBuffer(RenderingContext.ARRAY_BUFFER,dataBuffer);
-        gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.DYNAMIC_DRAW);    
 
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.position);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.size);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tilePosition);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tileDimension);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.colour);
+        gl.bindBuffer(RenderingContext.ARRAY_BUFFER,dataBuffer);
+        // gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.DYNAMIC_DRAW);    
+        // gl.bufferSubData(RenderingContext.ARRAY_BUFFER,0,data);
+
+
+        // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.position);
+        // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.size);
+        // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tilePosition);
+        // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tileDimension);
+        // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.colour);
 
         gl.vertexAttribPointer(untyped pointSpriteShader.attribute.position, 2, RenderingContext.FLOAT, false, 36, 0);
         gl.vertexAttribPointer(untyped pointSpriteShader.attribute.size, 1, RenderingContext.FLOAT, false, 36, 8);
