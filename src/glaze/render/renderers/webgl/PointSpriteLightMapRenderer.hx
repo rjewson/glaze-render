@@ -41,7 +41,6 @@ class PointSpriteLightMapRenderer implements IRenderer
     }
 
     public function Init(gl:RenderingContext,camera:Camera) {
-        js.Lib.debug();
         this.gl = gl;
         this.camera = camera;
         projection = new Vector2();

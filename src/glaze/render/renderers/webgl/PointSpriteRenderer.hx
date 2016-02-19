@@ -57,12 +57,6 @@ class PointSpriteRenderer implements IRenderer
         gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.DYNAMIC_DRAW);
         ResetBatch();
 
-        gl.useProgram(pointSpriteShader.program);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.position);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.size);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tilePosition);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tileDimension);
-        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.colour);
     }
 
     public function SetSpriteSheet(texture:Texture,spriteSize:Int,spritesWide:Int,spritesHigh:Int) {
@@ -102,18 +96,14 @@ class PointSpriteRenderer implements IRenderer
     // }    
 
     public function AddSpriteToBatch(spriteX:Float,spriteY:Float,width:Float,height:Float,x:Float,y:Float,size:Float,alpha:Int,flipX:Int,flipY:Int,nop:Int) {
-        var index = indexRun * 9;
+        var index = indexRun * 7;
         data[index+0] = Std.int(x + camera.position.x);
         data[index+1] = Std.int(y + camera.position.y);
         data[index+2] = size;
-        data[index+3] = spriteX;
-        data[index+4] = spriteY;
-        data[index+5] = width;
-        data[index+6] = height;
-
-        data[index+7] = flipX;
-        data[index+8] = flipY;
-        // trace(flipX,flipY);
+        data[index+3] = spriteX+(width*Math.min(flipX,0)*-1);
+        data[index+4] = spriteY+(height*Math.min(flipY,0)*-1);
+        data[index+5] = width*flipX;
+        data[index+6] = height*flipY;
         // index *= 7;
         // data8[index+28] = 1;
         // data8[index+29] = 1;
@@ -123,7 +113,6 @@ class PointSpriteRenderer implements IRenderer
     }
 
     public function Render(clip:AABB2) {
-        // js.Lib.debug();
 
         gl.enable(RenderingContext.BLEND);
         gl.blendFunc(RenderingContext.SRC_ALPHA, RenderingContext.ONE_MINUS_SRC_ALPHA);
@@ -131,22 +120,19 @@ class PointSpriteRenderer implements IRenderer
         gl.useProgram(pointSpriteShader.program);
 
         gl.bindBuffer(RenderingContext.ARRAY_BUFFER,dataBuffer);
-        // gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.DYNAMIC_DRAW);    
-        // gl.bufferSubData(RenderingContext.ARRAY_BUFFER,0,data);
+        gl.bufferSubData(RenderingContext.ARRAY_BUFFER,0,data);
 
-
-        // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.position);
-        // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.size);
-        // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tilePosition);
-        // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tileDimension);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.position);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.size);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tilePosition);
+        gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.tileDimension);
         // gl.enableVertexAttribArray(untyped pointSpriteShader.attribute.colour);
 
-        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.position, 2, RenderingContext.FLOAT, false, 36, 0);
-        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.size, 1, RenderingContext.FLOAT, false, 36, 8);
-        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.tilePosition, 2, RenderingContext.FLOAT, false, 36, 12);
-        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.tileDimension, 2, RenderingContext.FLOAT, false, 36, 20);
-        // gl.vertexAttribPointer(untyped pointSpriteShader.attribute.colour, 4, RenderingContext.UNSIGNED_BYTE, false, 36, 28);
-        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.colour, 2, RenderingContext.FLOAT, false, 36, 28);
+        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.position, 2, RenderingContext.FLOAT, false, 28, 0);
+        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.size, 1, RenderingContext.FLOAT, false, 28, 8);
+        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.tilePosition, 2, RenderingContext.FLOAT, false, 28, 12);
+        gl.vertexAttribPointer(untyped pointSpriteShader.attribute.tileDimension, 2, RenderingContext.FLOAT, false, 28, 20);
+        // gl.vertexAttribPointer(untyped pointSpriteShader.attribute.colour, 4, RenderingContext.UNSIGNED_BYTE, false, 28, 28);
 
         gl.uniform2f(untyped pointSpriteShader.uniform.projectionVector,projection.x,projection.y);            
         // gl.uniform2f(untyped pointSpriteShader.uniform.flip,1,1);            
@@ -168,12 +154,12 @@ class PointSpriteRenderer implements IRenderer
         "attribute vec2 colour;",
         "varying vec2 vTilePos;",
         "varying vec2 tileDim;",
-        "varying vec2 vColor;",
+        // "varying vec2 vColor;",
         "void main() {",
             "vTilePos = tilePosition;",
             "tileDim = tileDimension;",
             "gl_PointSize = size;",
-            "vColor = colour;",
+            // "vColor = colour;",
             "gl_Position = vec4( position.x / projectionVector.x -1.0, position.y / -projectionVector.y + 1.0 , 0.0, 1.0);",            
         "}",
     ];
@@ -203,9 +189,13 @@ fy = 1
         // "uniform vec2 flip;",
         "varying vec2 vTilePos;",
         "varying vec2 tileDim;",
-        "varying vec2 vColor;",
+        // "varying vec2 vColor;",
         "void main() {",
-            "vec2 uv = vec2( ((-1.0+(2.0*vColor.x))*(vColor.x-gl_PointCoord.x)*tileDim.x) + vTilePos.x, ((-1.0+(2.0*vColor.y))*(vColor.y-gl_PointCoord.y)*tileDim.y) + vTilePos.y);",
+            "vec2 uv = vec2( gl_PointCoord.x*tileDim.x + vTilePos.x, gl_PointCoord.y*tileDim.y + vTilePos.y );",
+            
+            //Latest
+            //"vec2 uv = vec2( ((-1.0+(2.0*vColor.x))*(vColor.x-gl_PointCoord.x)*tileDim.x) + vTilePos.x, ((-1.0+(2.0*vColor.y))*(vColor.y-gl_PointCoord.y)*tileDim.y) + vTilePos.y);",
+            
             //"vec2 uv = vec2( gl_PointCoord.x*tileDim.x + vTilePos.x, gl_PointCoord.y*tileDim.y + vTilePos.y);", //Works no rotation
             // "vec2 uv = vec2( gl_PointCoord.x*invTexTilesWide + invTexTilesWide*vTilePos.x, gl_PointCoord.y*invTexTilesHigh + invTexTilesHigh*vTilePos.y);",
             //"vec2 uv = vec2( (-1.0*(0.0-gl_PointCoord.x))*invTexTilesWide + invTexTilesWide*vTilePos.x, (gl_PointCoord.y)*invTexTilesHigh + invTexTilesHigh*vTilePos.y);",

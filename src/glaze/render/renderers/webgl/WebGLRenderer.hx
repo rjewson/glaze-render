@@ -63,6 +63,9 @@ class WebGLRenderer
 
         if (!gl.getExtension('OES_texture_float')) 
             trace('New browser time: Float textures not supported');
+
+        // var ext = gl.getExtension("OES_vertex_array_object");
+        // js.Lib.debug();
     }
   
     public function Resize(width:Int,height:Int) {

@@ -37,8 +37,14 @@ class Camera extends DisplayObjectContainer
         // realPosition.plusEquals(shake);
         //Clamp position inside shrunk camera extents
         cameraExtentsAABB.fitPoint(realPosition);
-        position.x = rf(-realPosition.x+halfViewportSize.x);
-        position.y = rf(-realPosition.y+halfViewportSize.y);
+
+        var positionx = rf(-realPosition.x+halfViewportSize.x);
+        var positiony = rf(-realPosition.y+halfViewportSize.y);
+
+        // position.x = positionx;
+        position.x = position.x + (positionx-position.x)*0.1;
+        position.y = position.y + (positiony-position.y)*0.1;
+        position.y = positiony;
 
         position.plusEquals(shake);
         shake.setTo(0,0);
