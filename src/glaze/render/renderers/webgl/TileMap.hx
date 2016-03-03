@@ -52,6 +52,8 @@ class TileMap implements IRenderer
     }
 
     public function Init(gl:RenderingContext,camera:Camera) {
+        if (this.gl!=null)
+            return;
         this.gl = gl;
         this.camera = camera;
         tileScale = 1.0;
@@ -90,7 +92,7 @@ class TileMap implements IRenderer
         // writebuffer[3] = 0;
         flip = false;
 
-        writebuffer2 = new TypedArray2D(1,1);
+        writebuffer2 = new TypedArray2D(3,3); //Max 3x3 tileset changes
 
     }
 
@@ -166,26 +168,40 @@ class TileMap implements IRenderer
     public function updateMap(x:Int, y:Int, data:Array<Int>) {
         // js.Lib.debug();
 
-        var superY = Math.floor(data[4]/8);
-        var superX = data[4] % 8;
-        var startX = data[0];
-        var startY = data[1];
+        var startX  = data[0];
+        var startY  = data[1];
+        var width   = data[2];
+        var height  = data[3];
+        var centerX = data[4];
+        var centerY = data[5];
+        var superY  = Math.floor(data[6]/8);
+        var superX  = data[6] % 8;
+// if (width>1)
+//     js.Lib.debug();
+        writebuffer2.h = height;
+        writebuffer2.w = width;
 
-        var width:Int = data[2];
-        var height:Int = data[3];
-
-        var value = superY << 24 | superX << 16 | startY << 8 | startX;
-        writebuffer2.set(0,0,value);
+        for (ypos in 0...height) {
+            for (xpos in 0...width) {
+                var _x = startX+xpos;
+                var _y = startY+ypos;
+                var value = superY << 24 | superX << 16 | _y << 8 | _x;
+                writebuffer2.set(xpos,ypos,value);
+            }
+        }
 
         var writeLayer = layers[2].tileDataTexture;
         gl.bindTexture(RenderingContext.TEXTURE_2D, writeLayer); 
         gl.texSubImage2D(RenderingContext.TEXTURE_2D, 0,
-                   x, y, width, height,
+                   x-centerX, y-centerY, width , height,
                    RenderingContext.RGBA, RenderingContext.UNSIGNED_BYTE,
                    writebuffer2.data8);
     }
 
     public function Render(clip:AABB2) {
+    }
+
+    public function RenderLayers(clip:AABB2,layerIndexes:Array<Int>) {
         // return;
         var x = -camera.position.x / (tileScale*2); //The *2 modifies the camera movemment
         var y = -camera.position.y / (tileScale*2);
@@ -232,10 +248,10 @@ class TileMap implements IRenderer
 
 
 
-
-        var i = layers.length; 
-        while (i>0) {
-            i--; 
+        for (i in layerIndexes) {
+        // var i = layers.length; 
+        // while (i>0) {
+        //     i--; 
             var layer = layers[i];
             var pX = RoundFunction(x * tileScale * layer.scrollScale.x);
             var pY = RoundFunction(y * tileScale * layer.scrollScale.y);

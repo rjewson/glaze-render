@@ -44,7 +44,7 @@ class Camera extends DisplayObjectContainer
         // position.x = positionx;
         position.x = position.x + (positionx-position.x)*0.1;
         position.y = position.y + (positiony-position.y)*0.1;
-        position.y = positiony;
+        // position.y = positiony;
 
         position.plusEquals(shake);
         shake.setTo(0,0);
