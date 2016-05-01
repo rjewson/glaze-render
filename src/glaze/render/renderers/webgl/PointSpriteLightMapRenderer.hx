@@ -81,7 +81,8 @@ class PointSpriteLightMapRenderer implements IRenderer
     }
 
     public function Render(clip:AABB2) {
-
+        if (indexRun==0)
+            return;
         // for (y in 5...25 ) {  
         //     for (x in 15...20) {
         //        AddSpriteToBatch( (x*32)-16,(y*32)-16,32,128,0,0,255);             
