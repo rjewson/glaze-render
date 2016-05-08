@@ -67,6 +67,7 @@ class WebGLBatch
     }
 
     public function Flush(shader:ShaderWrapper,texture:Texture,size:Int) {
+
         gl.bindBuffer(RenderingContext.ARRAY_BUFFER,dataBuffer);
         // gl.bufferData(RenderingContext.ARRAY_BUFFER,data,RenderingContext.STATIC_DRAW);
         gl.bufferSubData(RenderingContext.ARRAY_BUFFER,0,data);
@@ -84,8 +85,6 @@ class WebGLBatch
         var tw = sprite.texture.baseTexture.width;
         var th = sprite.texture.baseTexture.height;
         var uvs = sprite.texture.uvs;
-
-
         //0
         //Verts
         data[index + 0 ] = sprite.transformedVerts[0]; 
@@ -129,7 +128,6 @@ class WebGLBatch
 
 
     public function Render(shader:ShaderWrapper,stage:Stage,clip:AABB2) {
-
         // gl.useProgram(shader.program);
 
         var node:DisplayObjectContainer;

@@ -46,6 +46,10 @@ class SpriteRenderer implements IRenderer
     }
 
     public function Render(clip:AABB2) {
+
+        stage.updateTransform();
+        stage.PreRender();
+
         gl.useProgram(spriteShader.program);
         // if (first) {
             gl.uniform2f(untyped spriteShader.uniform.projectionVector,projection.x,projection.y);            

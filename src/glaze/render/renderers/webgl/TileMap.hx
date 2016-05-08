@@ -36,6 +36,7 @@ class TileMap implements IRenderer
     public var quadVertBuffer:Buffer;
 
     public var layers:Array<TileLayer>;
+    public var renderLayers:Array<TileLayerRenderProxy>;
 
     public var tilemapShader:ShaderWrapper;
 
@@ -47,6 +48,7 @@ class TileMap implements IRenderer
 
     var flip:Bool;
 
+
     public function new()
     {
     }
@@ -57,10 +59,11 @@ class TileMap implements IRenderer
         this.gl = gl;
         this.camera = camera;
         tileScale = 1.0;
-        tileSize = 16;
+        tileSize = 8;
         filtered = false;
         spriteSheet = gl.createTexture();
         layers = new Array<TileLayer>();
+        renderLayers = new Array<TileLayerRenderProxy>();
 
         viewportSize = new Vector2();
         scaledViewportSize = new Float32Array(2);
@@ -94,9 +97,12 @@ class TileMap implements IRenderer
 
         writebuffer2 = new TypedArray2D(3,3); //Max 3x3 tileset changes
 
+
     }
 
     public function Resize(width:Int,height:Int) {
+        width=400;
+        height=320;
         viewportSize.x = width;
         viewportSize.y = height;
         scaledViewportSize[0] = width/tileScale;
@@ -108,18 +114,6 @@ class TileMap implements IRenderer
         scaledViewportSize[0] = viewportSize.x/scale;
         scaledViewportSize[1] = viewportSize.y/scale;
     }
-
-    // public function Filtered(filtered:Bool) {
-    //     this.filtered = filtered;
-    //     gl.bindTexture(RenderingContext.TEXTURE_2D,spriteSheet);
-    //     if(filtered) {
-    //         gl.texParameteri(RenderingContext.TEXTURE_2D, RenderingContext.TEXTURE_MAG_FILTER, RenderingContext.NEAREST);
-    //         gl.texParameteri(RenderingContext.TEXTURE_2D, RenderingContext.TEXTURE_MIN_FILTER, RenderingContext.NEAREST);
-    //     } else {
-    //         gl.texParameteri(RenderingContext.TEXTURE_2D, RenderingContext.TEXTURE_MAG_FILTER, RenderingContext.LINEAR);
-    //         gl.texParameteri(RenderingContext.TEXTURE_2D, RenderingContext.TEXTURE_MIN_FILTER, RenderingContext.LINEAR); // Worth it to mipmap here?
-    //     }        
-    // }
 
     public function SetSpriteSheet(image:Image) {
         gl.bindTexture(RenderingContext.TEXTURE_2D, spriteSheet);
@@ -155,15 +149,14 @@ class TileMap implements IRenderer
         layers.push(layer);
     }
 
-    public function RoundFunction(v:Float):Float {
-        // return Math.floor(v);
-        return v;
-        return Math.round(v);
-        //return Std.int(v);
-        //return cast (0.5 + v) >> 0;
-        //v-=0.5;
-        return Math.round( v * 10) / 10;
+    public function SetTileRenderLayer(layers:Array<Int>) {
+        var tileRenderLayer = new glaze.render.renderers.webgl.TileLayerRenderProxy(null,layers);
+        renderLayers.push(tileRenderLayer);
     }
+
+    // public function RoundFunction(v:Float):Float {
+    //     var i = Math.round(v);
+    // }
 
     public function updateMap(x:Int, y:Int, data:Array<Int>) {
         // js.Lib.debug();
@@ -176,8 +169,7 @@ class TileMap implements IRenderer
         var centerY = data[5];
         var superY  = Math.floor(data[6]/8);
         var superX  = data[6] % 8;
-// if (width>1)
-//     js.Lib.debug();
+
         writebuffer2.h = height;
         writebuffer2.w = width;
 
@@ -201,16 +193,14 @@ class TileMap implements IRenderer
     public function Render(clip:AABB2) {
     }
 
-    public function RenderLayers(clip:AABB2,layerIndexes:Array<Int>) {
-        // return;
-        var x = -camera.position.x / (tileScale*2); //The *2 modifies the camera movemment
-        var y = -camera.position.y / (tileScale*2);
-        //x += tileSize/2;
-        //y += tileSize/2;
 
-        gl.enable(RenderingContext.BLEND);
-        gl.blendFunc(RenderingContext.SRC_ALPHA, RenderingContext.ONE_MINUS_SRC_ALPHA);
 
+    public function RenderLayers(clip:AABB2,layerIndexes:Array<Int>,p:Vector2) {
+
+        gl.colorMask(true, true, true, true); 
+        gl.clearColor(0,0,0,0);
+        gl.clear(RenderingContext.COLOR_BUFFER_BIT);
+ 
         gl.useProgram(tilemapShader.program);
 
         gl.bindBuffer(RenderingContext.ARRAY_BUFFER, quadVertBuffer);
@@ -227,34 +217,15 @@ class TileMap implements IRenderer
         gl.uniform1i(untyped tilemapShader.uniform.sprites, 0);
         gl.uniform1i(untyped tilemapShader.uniform.tiles, 1);    
 
-        // if (flip) {
-        //     writebuffer[0] = 0;
-        // writebuffer[1] = 0;
-        // writebuffer[2] = 0;
-        // writebuffer[3] = 0;
-        // } else {
-        //     writebuffer[0] = 0xFF;
-        // writebuffer[1] = 0xFF;
-        // writebuffer[2] = 0xFF;
-        // writebuffer[3] = 0xFF;
-        // }
-        // flip = !flip;
-        // var testLayer = layers[2].tileDataTexture;
-        // gl.bindTexture(RenderingContext.TEXTURE_2D, testLayer);
-        // gl.texSubImage2D(RenderingContext.TEXTURE_2D, 0,
-        //            1, 1, 2, 1,
-        //            RenderingContext.RGBA, RenderingContext.UNSIGNED_BYTE,
-        //            writebuffer);
-
-
-
         for (i in layerIndexes) {
         // var i = layers.length; 
         // while (i>0) {
         //     i--; 
             var layer = layers[i];
-            var pX = RoundFunction(x * tileScale * layer.scrollScale.x);
-            var pY = RoundFunction(y * tileScale * layer.scrollScale.y);
+            // var pX = RoundFunction(x * tileScale * layer.scrollScale.x);
+            // var pY = RoundFunction(y * tileScale * layer.scrollScale.y);
+            var pX = p.x/2;
+            var pY = p.y/2;
 
             gl.uniform2f(untyped tilemapShader.uniform.viewOffset, pX, pY);
             gl.uniform2fv(untyped tilemapShader.uniform.inverseSpriteTextureSize, layer.inverseSpriteTextureSize);
@@ -322,7 +293,11 @@ p.x = Math.floor(index / 8);
 
         "void main(void) {",
         "   vec4 tile = texture2D(tiles, texCoord);",
-        "   if(tile.x == 1.0 && tile.y == 1.0) { discard; }",
+        // "   if(tile.x == 1.0 && tile.y == 1.0) { discard; }",
+        "   if(tile.x == 1.0 && tile.y == 1.0) { ",
+        "    discard;", 
+        // "    gl_FragColor = vec4(0.0,0.0,0.0,0.0);", 
+        "   } else {",
         "   vec2 superSpriteOffset = floor(tile.zw * 256.0) * 256.0;",
         "   vec2 spriteOffset = floor(tile.xy * 256.0) * tileSize;",
         "   vec2 spriteCoord = mod(pixelCoord, tileSize);",
@@ -333,6 +308,7 @@ p.x = Math.floor(index / 8);
         
 
         "   gl_FragColor = texture2D(sprites, (superSpriteOffset + spriteOffset + spriteCoord) * inverseSpriteTextureSize);",
+        "   }",
         "}"
     ];
 

@@ -85,8 +85,8 @@ class WebGLRenderer
     public function Render(clip:AABB2) {
         if (contextLost) 
             return;
-        stage.updateTransform();
-        stage.PreRender();
+        // stage.updateTransform();
+        // stage.PreRender();
 
         // gl.viewport(0,0,width,height);
         // gl.colorMask(true,true,true,contextAttributes.alpha);
@@ -104,8 +104,11 @@ gl.colorMask(true, true, true, false);
 
         //gl.blendFunc(RenderingContext.ONE,RenderingContext.ONE_MINUS_SRC_ALPHA);
         // return;
-        for (renderer in renderers)
+        // trace("----");
+        for (renderer in renderers) {
+            // trace(Type.getClassName(Type.getClass(renderer)));
             renderer.Render(clip);
+        }
     }
 
     private function onContextLost(event:Event) {

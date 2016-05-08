@@ -27,7 +27,8 @@ class Camera extends DisplayObjectContainer
     }
 
     function rf(v:Float) {
-        return Math.floor(v);
+        return v;
+        // return Std.int(v);
     }
 
     public function Focus(x:Float,y:Float) {
@@ -38,15 +39,19 @@ class Camera extends DisplayObjectContainer
         //Clamp position inside shrunk camera extents
         cameraExtentsAABB.fitPoint(realPosition);
 
-        var positionx = rf(-realPosition.x+halfViewportSize.x);
-        var positiony = rf(-realPosition.y+halfViewportSize.y);
+        var positionx = -realPosition.x+halfViewportSize.x;
+        var positiony = -realPosition.y+halfViewportSize.y;
 
         // position.x = positionx;
-        position.x = position.x + (positionx-position.x)*0.1;
-        position.y = position.y + (positiony-position.y)*0.1;
+        if (Math.abs(positionx-position.x)>2)
+            position.x = position.x + (positionx-position.x)*0.1;
+        if (Math.abs(positiony-position.y)>2)
+            position.y = position.y + (positiony-position.y)*0.1;
         // position.y = positiony;
 
         position.plusEquals(shake);
+        position.x = rf(position.x);
+        position.y = rf(position.y);
         shake.setTo(0,0);
     }
 
