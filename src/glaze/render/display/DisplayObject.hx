@@ -87,11 +87,11 @@ class DisplayObject
         //positionx = cast Math.round( position.x * 10) / 10;
         //positiony = cast Math.round( position.y * 10) / 10;
 
-        var positionx = position.x;
-        var positiony = position.y;
+        // var positionx = position.x;
+        // var positiony = position.y;
 
-        // var positionx:Int = Math.floor(position.x);
-        // var positiony:Int = Math.floor(position.y);
+        var positionx:Int = Math.floor(position.x);
+        var positiony:Int = Math.floor(position.y);
 
         var sinR = _rotationComponents.y;//Math.sin(rotation);
         var cosR = _rotationComponents.x;//Math.cos(rotation);

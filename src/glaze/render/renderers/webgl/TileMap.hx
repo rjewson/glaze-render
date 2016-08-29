@@ -42,15 +42,15 @@ class TileMap implements IRenderer
 
     public var camera:Camera;
 
-    var writebuffer:Uint8Array;
-
     var writebuffer2:TypedArray2D;
 
     var flip:Bool;
 
-
-    public function new()
-    {
+    public function new(tileSize:Int,tileScale:Float) {
+        this.tileSize = tileSize;
+        this.tileScale = tileScale;
+        layers = new Array<TileLayer>();
+        renderLayers = new Array<TileLayerRenderProxy>();
     }
 
     public function Init(gl:RenderingContext,camera:Camera) {
@@ -58,12 +58,10 @@ class TileMap implements IRenderer
             return;
         this.gl = gl;
         this.camera = camera;
-        tileScale = 1.0;
-        tileSize = 8;
+        //tileScale = 1.0;
+        
         filtered = false;
         spriteSheet = gl.createTexture();
-        layers = new Array<TileLayer>();
-        renderLayers = new Array<TileLayerRenderProxy>();
 
         viewportSize = new Vector2();
         scaledViewportSize = new Float32Array(2);
@@ -88,32 +86,35 @@ class TileMap implements IRenderer
         gl.bufferData(RenderingContext.ARRAY_BUFFER, quadVerts, RenderingContext.STATIC_DRAW);
         tilemapShader = new ShaderWrapper(gl, WebGLShaders.CompileProgram(gl,TILEMAP_VERTEX_SHADER,TILEMAP_FRAGMENT_SHADER));
 
-        writebuffer = new Uint8Array(2*2*4);
-        // writebuffer[0] = 0;
-        // writebuffer[1] = 0;
-        // writebuffer[2] = 0;
-        // writebuffer[3] = 0;
         flip = false;
 
         writebuffer2 = new TypedArray2D(3,3); //Max 3x3 tileset changes
 
+        for (renderLayer in renderLayers) {
+            renderLayer.Init(gl,camera);
+        }
 
     }
 
     public function Resize(width:Int,height:Int) {
-        width=400;
-        height=320;
-        viewportSize.x = width;
-        viewportSize.y = height;
-        scaledViewportSize[0] = width/tileScale;
-        scaledViewportSize[1] = height/tileScale;
+
+        var expandedWidth:Float =  ( Math.floor(width / (tileSize*tileScale)) + 2 ) * tileSize;        
+        var expandedHeight:Float = ( Math.floor(height / (tileSize*tileScale)) + 2 ) * tileSize;
+
+        viewportSize.x = expandedWidth*tileScale;
+        viewportSize.y = expandedHeight*tileScale;
+        scaledViewportSize[0] = viewportSize.x/tileScale;
+        scaledViewportSize[1] = viewportSize.y/tileScale;
+        for (renderLayer in renderLayers) {
+            renderLayer.Resize(Math.floor(expandedWidth),Math.floor(expandedHeight));
+        }
     }
 
-    public function TileScale(scale:Float) {
-        this.tileScale = scale;
-        scaledViewportSize[0] = viewportSize.x/scale;
-        scaledViewportSize[1] = viewportSize.y/scale;
-    }
+    // public function TileScale(scale:Float) {
+    //     this.tileScale = scale;
+    //     scaledViewportSize[0] = viewportSize.x/scale;
+    //     scaledViewportSize[1] = viewportSize.y/scale;
+    // }
 
     public function SetSpriteSheet(image:Image) {
         gl.bindTexture(RenderingContext.TEXTURE_2D, spriteSheet);
@@ -150,7 +151,7 @@ class TileMap implements IRenderer
     }
 
     public function SetTileRenderLayer(layers:Array<Int>) {
-        var tileRenderLayer = new glaze.render.renderers.webgl.TileLayerRenderProxy(null,layers);
+        var tileRenderLayer = new glaze.render.renderers.webgl.TileLayerRenderProxy(this,layers);
         renderLayers.push(tileRenderLayer);
     }
 
@@ -191,14 +192,16 @@ class TileMap implements IRenderer
     }
 
     public function Render(clip:AABB2) {
+        for (renderLayer in renderLayers) {
+            renderLayer.Render(clip);
+        }
     }
 
+    // public function RenderLayers(clip:AABB2,layerIndexes:Array<Int>,p:Vector2) {
+    public function RenderLayers(renderLayer:TileLayerRenderProxy) {
 
-
-    public function RenderLayers(clip:AABB2,layerIndexes:Array<Int>,p:Vector2) {
-
+        gl.clearColor(0.0,0.0,0.0,0.0);
         gl.colorMask(true, true, true, true); 
-        gl.clearColor(0,0,0,0);
         gl.clear(RenderingContext.COLOR_BUFFER_BIT);
  
         gl.useProgram(tilemapShader.program);
@@ -217,15 +220,10 @@ class TileMap implements IRenderer
         gl.uniform1i(untyped tilemapShader.uniform.sprites, 0);
         gl.uniform1i(untyped tilemapShader.uniform.tiles, 1);    
 
-        for (i in layerIndexes) {
-        // var i = layers.length; 
-        // while (i>0) {
-        //     i--; 
+        for (i in renderLayer.layers) {
             var layer = layers[i];
-            // var pX = RoundFunction(x * tileScale * layer.scrollScale.x);
-            // var pY = RoundFunction(y * tileScale * layer.scrollScale.y);
-            var pX = p.x/2;
-            var pY = p.y/2;
+            var pX = renderLayer.thisSnap.x/2;
+            var pY = renderLayer.thisSnap.y/2;
 
             gl.uniform2f(untyped tilemapShader.uniform.viewOffset, pX, pY);
             gl.uniform2fv(untyped tilemapShader.uniform.inverseSpriteTextureSize, layer.inverseSpriteTextureSize);
